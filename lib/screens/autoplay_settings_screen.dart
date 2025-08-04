@@ -1,0 +1,391 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_test_task/viewmodels/game_slot_viewmodel.dart';
+
+class AutoplaySettingsDialog {
+  static Future<void> show(
+    BuildContext context, {
+    VoidCallback? onStartAutoplay,
+  }) {
+    return showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) =>
+          _AutoplaySettingsDialogWidget(onStartAutoplay: onStartAutoplay),
+    );
+  }
+}
+
+class _AutoplaySettingsDialogWidget extends StatefulWidget {
+  final VoidCallback? onStartAutoplay;
+
+  const _AutoplaySettingsDialogWidget({this.onStartAutoplay});
+
+  @override
+  State<_AutoplaySettingsDialogWidget> createState() =>
+      _AutoplaySettingsDialogWidgetState();
+}
+
+class _AutoplaySettingsDialogWidgetState
+    extends State<_AutoplaySettingsDialogWidget> {
+  static const List<int> autoplaySteps = [10, 20, 30, 50, 70, 100, 500, 1000];
+
+  int selectedAutoplayCount = 10;
+  bool quickSpinEnabled = false;
+  bool turboSpinEnabled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeFromViewModel();
+  }
+
+  void _initializeFromViewModel() {
+    final gameViewModel = Provider.of<GameSlotViewModel>(
+      context,
+      listen: false,
+    );
+    selectedAutoplayCount = gameViewModel.autoplayCount;
+    quickSpinEnabled = gameViewModel.quickSpinEnabled;
+    turboSpinEnabled = gameViewModel.turboSpinEnabled;
+  }
+
+  void _applySettings() {
+    final gameViewModel = Provider.of<GameSlotViewModel>(
+      context,
+      listen: false,
+    );
+
+    gameViewModel.setAutoplaySettings(
+      autoplayCount: selectedAutoplayCount,
+      quickSpin: quickSpinEnabled,
+      turboSpin: turboSpinEnabled,
+    );
+
+    gameViewModel.startAutoplay();
+
+    Navigator.of(context).pop();
+
+    if (widget.onStartAutoplay != null) {
+      widget.onStartAutoplay!();
+    }
+  }
+
+  void _saveSettingsAndClose() {
+    final gameViewModel = Provider.of<GameSlotViewModel>(
+      context,
+      listen: false,
+    );
+
+    gameViewModel.setAutoplaySettings(
+      autoplayCount: selectedAutoplayCount,
+      quickSpin: quickSpinEnabled,
+      turboSpin: turboSpinEnabled,
+    );
+
+    Navigator.of(context).pop();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: Colors.transparent,
+      contentPadding: EdgeInsets.zero,
+      content: Container(
+        width: MediaQuery.of(context).size.width * 0.65,
+        height: MediaQuery.of(context).size.height * 0.75,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF2C1810), Color(0xFF4A2C1A)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.amber, width: 2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.5),
+              blurRadius: 15,
+              spreadRadius: 3,
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF4A2C1A), Color(0xFF6B3D25)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(18),
+                  topRight: Radius.circular(18),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Image.asset(
+                    'assets/images/autoplaysettings.png',
+                    width: 32,
+                    height: 32,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Icon(
+                        Icons.play_circle_outline,
+                        color: Colors.amber,
+                        size: 32,
+                      );
+                    },
+                  ),
+                  const SizedBox(width: 10),
+                  const Text(
+                    'AUTOPLAY SETTINGS',
+                    style: TextStyle(
+                      color: Colors.amber,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Spacer(),
+                  GestureDetector(
+                    onTap: _saveSettingsAndClose,
+                    child: const Icon(
+                      Icons.close,
+                      color: Colors.amber,
+                      size: 24,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'NUMBER OF AUTOSPINS',
+                      style: TextStyle(
+                        color: Colors.amber,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.amber, width: 1),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 10,
+                                ),
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [Colors.green, Colors.lightGreen],
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Text(
+                                  '$selectedAutoplayCount',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+
+                          SliderTheme(
+                            data: SliderTheme.of(context).copyWith(
+                              activeTrackColor: Colors.green,
+                              inactiveTrackColor: Colors.grey,
+                              thumbColor: Colors.green,
+                              thumbShape: const RoundSliderThumbShape(
+                                enabledThumbRadius: 12,
+                              ),
+                              overlayColor: Colors.green.withOpacity(0.2),
+                              trackHeight: 4,
+                            ),
+                            child: Slider(
+                              value: autoplaySteps
+                                  .indexOf(selectedAutoplayCount)
+                                  .toDouble(),
+                              min: 0,
+                              max: (autoplaySteps.length - 1).toDouble(),
+                              divisions: autoplaySteps.length - 1,
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedAutoplayCount =
+                                      autoplaySteps[value.round()];
+                                });
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 30),
+
+                    Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                turboSpinEnabled = !turboSpinEnabled;
+                                if (turboSpinEnabled) {
+                                  quickSpinEnabled = false;
+                                }
+                              });
+                            },
+                            child: _buildSpeedCheckbox(
+                              title: 'TURBO\nSPIN',
+                              isEnabled: turboSpinEnabled,
+                              onChanged: (value) {
+                                setState(() {
+                                  turboSpinEnabled = value;
+                                  if (value) {
+                                    quickSpinEnabled = false;
+                                  }
+                                });
+                              },
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 15),
+
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                quickSpinEnabled = !quickSpinEnabled;
+                                if (quickSpinEnabled) {
+                                  turboSpinEnabled = false;
+                                }
+                              });
+                            },
+                            child: _buildSpeedCheckbox(
+                              title: 'QUICK\nSPIN',
+                              isEnabled: quickSpinEnabled,
+                              onChanged: (value) {
+                                setState(() {
+                                  quickSpinEnabled = value;
+                                  if (value) {
+                                    turboSpinEnabled = false;
+                                  }
+                                });
+                              },
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 15),
+                      ],
+                    ),
+
+                    const SizedBox(height: 30),
+
+                    GestureDetector(
+                      onTap: _applySettings,
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Colors.green, Colors.lightGreen],
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.white, width: 2),
+                        ),
+                        child: Center(
+                          child: Text(
+                            'START AUTOPLAY ($selectedAutoplayCount)',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSpeedCheckbox({
+    required String title,
+    required bool isEnabled,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isEnabled ? Colors.green : Colors.grey,
+          width: 2,
+        ),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              color: isEnabled ? Colors.green : Colors.transparent,
+              border: Border.all(
+                color: isEnabled ? Colors.green : Colors.grey,
+                width: 2,
+              ),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: isEnabled
+                ? const Icon(Icons.check, color: Colors.white, size: 16)
+                : null,
+          ),
+          const SizedBox(height: 10),
+
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: isEnabled ? Colors.white : Colors.grey[400],
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
