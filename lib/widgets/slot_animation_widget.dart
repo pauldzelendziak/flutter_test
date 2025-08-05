@@ -13,8 +13,7 @@ class SlotAnimationWidget extends StatefulWidget {
   final Function(int)? onScatterCallback;
   final bool shouldAnimate;
   final bool shouldBuyFeature;
-  final bool useQuickAnimation;
-  final double animationSpeed;
+
   const SlotAnimationWidget({
     super.key,
     this.onAnimationComplete,
@@ -27,8 +26,6 @@ class SlotAnimationWidget extends StatefulWidget {
     this.onScatterCallback,
     this.shouldAnimate = false,
     this.shouldBuyFeature = false,
-    this.useQuickAnimation = false,
-    this.animationSpeed = 1.0,
   });
 
   @override
@@ -63,9 +60,10 @@ class _SlotAnimationWidgetState extends State<SlotAnimationWidget> {
       widget.onGameReady!(game);
     }
 
+    // Завжди використовуємо максимальну швидкість
     game.setAnimationSettings(
-      useQuick: widget.useQuickAnimation,
-      speedMultiplier: widget.animationSpeed,
+      useQuick: true,
+      speedMultiplier: 2.0,
     );
   }
 
@@ -73,13 +71,11 @@ class _SlotAnimationWidgetState extends State<SlotAnimationWidget> {
   void didUpdateWidget(SlotAnimationWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (oldWidget.useQuickAnimation != widget.useQuickAnimation ||
-        oldWidget.animationSpeed != widget.animationSpeed) {
-      game.setAnimationSettings(
-        useQuick: widget.useQuickAnimation,
-        speedMultiplier: widget.animationSpeed,
-      );
-    }
+    // Завжди використовуємо максимальну швидкість
+    game.setAnimationSettings(
+      useQuick: true,
+      speedMultiplier: 2.0,
+    );
 
     if (widget.shouldBuyFeature && !hasBuyFeatureActivated) {
       hasBuyFeatureActivated = true;
@@ -97,7 +93,7 @@ class _SlotAnimationWidgetState extends State<SlotAnimationWidget> {
   }
 
   Future<void> _startBuyFeature() async {
-    await Future.delayed(const Duration(milliseconds: 100));
+    await Future.delayed(const Duration(milliseconds: 50)); // Прискорено з 100 до 50ms
     await game.activateBuyFeature();
 
     if (widget.onAnimationComplete != null) {
@@ -107,7 +103,7 @@ class _SlotAnimationWidgetState extends State<SlotAnimationWidget> {
   }
 
   Future<void> _startAnimation() async {
-    await Future.delayed(const Duration(milliseconds: 100));
+    await Future.delayed(const Duration(milliseconds: 50)); // Прискорено з 100 до 50ms
     await game.startSpinAnimation();
 
     if (widget.onAnimationComplete != null) {

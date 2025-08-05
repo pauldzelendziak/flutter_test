@@ -20,8 +20,6 @@ class GameSlotViewModel extends ChangeNotifier {
   bool _showWin = false;
 
   int _autoplayCount = 10;
-  bool _quickSpinEnabled = false;
-  bool _turboSpinEnabled = false;
   bool _isAutoplayActive = false;
   int _currentAutoplayCount = 0;
   bool _hasAutoplayBeenStarted = false;
@@ -45,8 +43,6 @@ class GameSlotViewModel extends ChangeNotifier {
 
     final autoplaySettings = StorageService().loadAutoplaySettings();
     _autoplayCount = autoplaySettings['count'];
-    _quickSpinEnabled = autoplaySettings['quickSpin'];
-    _turboSpinEnabled = autoplaySettings['turboSpin'];
 
     _isInitialized = true;
     print('✅ Дані завантажено з локального сховища');
@@ -64,8 +60,6 @@ class GameSlotViewModel extends ChangeNotifier {
   bool get showWin => _showWin;
 
   int get autoplayCount => _autoplayCount;
-  bool get quickSpinEnabled => _quickSpinEnabled;
-  bool get turboSpinEnabled => _turboSpinEnabled;
   bool get isAutoplayActive => _isAutoplayActive;
   int get currentAutoplayCount => _currentAutoplayCount;
   bool get hasAutoplayBeenStarted => _hasAutoplayBeenStarted;
@@ -74,39 +68,39 @@ class GameSlotViewModel extends ChangeNotifier {
       _doubleChanceEnabled ? _betAmount * 1.25 : _betAmount;
 
   final List<String> slotSymbols = [
-    'assets/images/candy1.png',
-    'assets/images/candy2.png',
-    'assets/images/candy3.png',
-    'assets/images/candy4.png',
-    'assets/images/candy5.png',
-    'assets/images/candy6.png',
-    'assets/images/candy7.png',
-    'assets/images/candy8.png',
-    'assets/images/candy9.png',
-    'assets/images/lolipop.png',
+    'assets/images/candy1.webp',
+    'assets/images/candy2.webp',
+    'assets/images/candy3.webp',
+    'assets/images/candy4.webp',
+    'assets/images/candy5.webp',
+    'assets/images/candy6.webp',
+    'assets/images/candy7.webp',
+    'assets/images/candy8.webp',
+    'assets/images/candy9.webp',
+    'assets/images/lolipop.webp',
   ];
 
   final Map<String, Map<String, double>> payoutMultipliers = {
-    'assets/images/candy1.png': {'12+': 50.0, '10-11': 25.0, '8-9': 10.0},
-    'assets/images/candy2.png': {'12+': 25.0, '10-11': 10.0, '8-9': 2.5},
-    'assets/images/candy3.png': {'12+': 15.0, '10-11': 5.0, '8-9': 2.0},
-    'assets/images/candy4.png': {'12+': 12.0, '10-11': 2.0, '8-9': 1.0},
-    'assets/images/candy5.png': {'12+': 10.0, '10-11': 1.5, '8-9': 1.0},
-    'assets/images/candy6.png': {'12+': 8.0, '10-11': 1.2, '8-9': 0.8},
-    'assets/images/candy7.png': {'12+': 5.0, '10-11': 1.0, '8-9': 0.5},
-    'assets/images/candy8.png': {'12+': 4.0, '10-11': 0.75, '8-9': 0.4},
-    'assets/images/candy9.png': {'12+': 2.0, '10-11': 0.5, '8-9': 0.25},
-    'assets/images/lolipop.png': {'12+': 2.0, '10-11': 0.5, '8-9': 0.25},
+    'assets/images/candy1.webp': {'12+': 50.0, '10-11': 25.0, '8-9': 10.0},
+    'assets/images/candy2.webp': {'12+': 25.0, '10-11': 10.0, '8-9': 2.5},
+    'assets/images/candy3.webp': {'12+': 15.0, '10-11': 5.0, '8-9': 2.0},
+    'assets/images/candy4.webp': {'12+': 12.0, '10-11': 2.0, '8-9': 1.0},
+    'assets/images/candy5.webp': {'12+': 10.0, '10-11': 1.5, '8-9': 1.0},
+    'assets/images/candy6.webp': {'12+': 8.0, '10-11': 1.2, '8-9': 0.8},
+    'assets/images/candy7.webp': {'12+': 5.0, '10-11': 1.0, '8-9': 0.5},
+    'assets/images/candy8.webp': {'12+': 4.0, '10-11': 0.75, '8-9': 0.4},
+    'assets/images/candy9.webp': {'12+': 2.0, '10-11': 0.5, '8-9': 0.25},
+    'assets/images/lolipop.webp': {'12+': 2.0, '10-11': 0.5, '8-9': 0.25},
   };
 
   final Map<String, double> multiplierValues = {
-    'assets/images/multi1.png': 1.0,
-    'assets/images/multi2.png': 2.0,
-    'assets/images/multi4.png': 4.0,
-    'assets/images/multi8.png': 8.0,
-    'assets/images/multi20.png': 20.0,
-    'assets/images/multi50.png': 50.0,
-    'assets/images/multi100.png': 100.0,
+    'assets/images/multi1.webp': 1.0,
+    'assets/images/multi2.webp': 2.0,
+    'assets/images/multi4.webp': 4.0,
+    'assets/images/multi8.webp': 8.0,
+    'assets/images/multi20.webp': 20.0,
+    'assets/images/multi50.webp': 50.0,
+    'assets/images/multi100.webp': 100.0,
   };
 
   List<List<String>> _currentSlots = [];
@@ -195,7 +189,8 @@ class GameSlotViewModel extends ChangeNotifier {
 
       notifyListeners();
 
-      Future.delayed(const Duration(milliseconds: 100), () {
+      Future.delayed(const Duration(milliseconds: 50), () {
+        // Прискорено з 100 до 50ms
         _shouldBuyFeature = false;
         notifyListeners();
       });
@@ -213,7 +208,8 @@ class GameSlotViewModel extends ChangeNotifier {
 
     notifyListeners();
 
-    Future.delayed(const Duration(milliseconds: 100), () {
+    Future.delayed(const Duration(milliseconds: 50), () {
+      // Прискорено з 100 до 50ms
       _shouldBuyFeature = false;
       notifyListeners();
     });
@@ -275,9 +271,11 @@ class GameSlotViewModel extends ChangeNotifier {
     double totalMultiplier = getTotalMultiplier();
 
     if (totalMultiplier > 1.0) {
-      return 'WIN \$${_currentWin.toStringAsFixed(2)} x${totalMultiplier.toStringAsFixed(1)}';
+      // Просто видаліть '$' звідси
+      return 'WIN ${_currentWin.toStringAsFixed(2)} x${totalMultiplier.toStringAsFixed(1)}';
     } else {
-      return 'WIN \$${_currentWin.toStringAsFixed(2)}';
+      // Просто видаліть '$' звідси
+      return 'WIN ${_currentWin.toStringAsFixed(2)}';
     }
   }
 
@@ -287,20 +285,10 @@ class GameSlotViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setAutoplaySettings({
-    required int autoplayCount,
-    required bool quickSpin,
-    required bool turboSpin,
-  }) {
+  void setAutoplaySettings({required int autoplayCount}) {
     _autoplayCount = autoplayCount;
-    _quickSpinEnabled = quickSpin;
-    _turboSpinEnabled = turboSpin;
 
-    StorageService().saveAutoplaySettings(
-      count: autoplayCount,
-      quickSpin: quickSpin,
-      turboSpin: turboSpin,
-    );
+    StorageService().saveAutoplaySettings(count: autoplayCount);
 
     if (autoplayCount == 0) {
       _hasAutoplayBeenStarted = false;
@@ -330,19 +318,6 @@ class GameSlotViewModel extends ChangeNotifier {
       }
       notifyListeners();
     }
-  }
-
-  bool shouldUseQuickAnimation() {
-    return _quickSpinEnabled || _turboSpinEnabled;
-  }
-
-  double getAnimationSpeedMultiplier() {
-    if (_turboSpinEnabled) {
-      return 2.0;
-    } else if (_quickSpinEnabled) {
-      return 1.5;
-    }
-    return 1.0;
   }
 
   void setCurrentWin(double win) {

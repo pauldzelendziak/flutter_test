@@ -14,7 +14,6 @@ class CandyGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Replace with your actual grid UI
     return Container(
       color: Colors.transparent,
       child: Center(child: Text('CandyGrid Placeholder')),

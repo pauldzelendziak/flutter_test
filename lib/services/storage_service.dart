@@ -12,8 +12,6 @@ class StorageService {
   static const String _keyBetAmount = 'bet_amount';
   static const String _keyDoubleChance = 'double_chance';
   static const String _keyAutoplayCount = 'autoplay_count';
-  static const String _keyQuickSpin = 'quick_spin';
-  static const String _keyTurboSpin = 'turbo_spin';
   static const String _keyMusicEnabled = 'music_enabled';
   static const String _keySoundEnabled = 'sound_enabled';
   static const String _keyMusicVolume = 'music_volume';
@@ -70,31 +68,25 @@ class StorageService {
 
   Future<void> saveAutoplaySettings({
     required int count,
-    required bool quickSpin,
-    required bool turboSpin,
   }) async {
     if (!_isInitialized) await initialize();
     await _prefs.setInt(_keyAutoplayCount, count);
-    await _prefs.setBool(_keyQuickSpin, quickSpin);
-    await _prefs.setBool(_keyTurboSpin, turboSpin);
     print(
-      '⚡ Автоспін збережено: $count спінів, Quick: $quickSpin, Turbo: $turboSpin',
+      '⚡ Автоспін збережено: $count спінів (завжди turbo)',
     );
   }
 
   Map<String, dynamic> loadAutoplaySettings() {
     if (!_isInitialized) {
-      return {'count': 10, 'quickSpin': false, 'turboSpin': false};
+      return {'count': 10};
     }
 
     final settings = {
       'count': _prefs.getInt(_keyAutoplayCount) ?? 10,
-      'quickSpin': _prefs.getBool(_keyQuickSpin) ?? false,
-      'turboSpin': _prefs.getBool(_keyTurboSpin) ?? false,
     };
 
     print(
-      '⚡ Автоспін завантажено: ${settings['count']} спінів, Quick: ${settings['quickSpin']}, Turbo: ${settings['turboSpin']}',
+      '⚡ Автоспін завантажено: ${settings['count']} спінів (завжди turbo)',
     );
     return settings;
   }

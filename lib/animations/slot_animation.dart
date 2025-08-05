@@ -5,7 +5,7 @@ import 'package:flame/effects.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test_task/services/audio_service.dart';
 
-class SlotAnimationGame extends FlameGame with HasGameRef {
+class SlotAnimationGame extends FlameGame with HasGameReference {
   static const int gridRows = 5;
   static const int gridCols = 6;
   static const double symbolSize = 45.0;
@@ -21,9 +21,6 @@ class SlotAnimationGame extends FlameGame with HasGameRef {
   Function(double, String)? onBuyFeatureWinCallback;
   Function(double)? onBuyFeatureWinAccumulate;
 
-  bool useQuickAnimation = false;
-  double animationSpeedMultiplier = 1.0;
-
   bool isBuyFeatureActive = false;
   int buyFeatureSpinsLeft = 0;
   bool _multipliersCollectedThisSpin = false;
@@ -33,26 +30,26 @@ class SlotAnimationGame extends FlameGame with HasGameRef {
   Function(int)? onScatterCallback;
 
   static const List<String> candySymbols = [
-    'assets/images/candy1.png',
-    'assets/images/candy2.png',
-    'assets/images/candy3.png',
-    'assets/images/candy4.png',
-    'assets/images/candy5.png',
-    'assets/images/candy6.png',
-    'assets/images/candy7.png',
+    'assets/images/candy1.webp',
+    'assets/images/candy2.webp',
+    'assets/images/candy3.webp',
+    'assets/images/candy4.webp',
+    'assets/images/candy5.webp',
+    'assets/images/candy6.webp',
+    'assets/images/candy7.webp',
   ];
 
   static const List<String> multiplierSymbols = [
-    'assets/images/multi1.png',
-    'assets/images/multi2.png',
-    'assets/images/multi4.png',
-    'assets/images/multi8.png',
-    'assets/images/multi20.png',
-    'assets/images/multi50.png',
-    'assets/images/multi100.png',
+    'assets/images/multi1.webp',
+    'assets/images/multi2.webp',
+    'assets/images/multi4.webp',
+    'assets/images/multi8.webp',
+    'assets/images/multi20.webp',
+    'assets/images/multi50.webp',
+    'assets/images/multi100.webp',
   ];
 
-  static const String scatterSymbol = 'assets/images/lolipop.png';
+  static const String scatterSymbol = 'assets/images/lolipop.webp';
   @override
   Color backgroundColor() {
     return Colors.transparent;
@@ -81,8 +78,8 @@ class SlotAnimationGame extends FlameGame with HasGameRef {
     required bool useQuick,
     required double speedMultiplier,
   }) {
-    useQuickAnimation = useQuick;
-    animationSpeedMultiplier = speedMultiplier;
+    // Метод залишений для сумісності, але не робить нічого
+    // Завжди використовуємо максимальну швидкість
   }
 
   String _getRandomSymbol() {
@@ -127,11 +124,20 @@ class SlotAnimationGame extends FlameGame with HasGameRef {
   Future<void> startSpinAnimation() async {
     if (isAnimating) return;
 
+    // Перевіряємо чи buy feature все ще активний (якщо це buy feature спін)
+    if (isBuyFeatureActive && buyFeatureSpinsLeft <= 0) return;
+
     isAnimating = true;
     _multipliersCollectedThisSpin = false;
     await _animateSymbolsOut();
 
+    // Перевіряємо чи не був перерваний під час анімації
+    if (!isAnimating) return;
+
     await _animateSymbolsIn();
+
+    // Перевіряємо чи не був перерваний під час анімації
+    if (!isAnimating) return;
 
     await _checkForWinningCombinations();
 
@@ -153,23 +159,23 @@ class SlotAnimationGame extends FlameGame with HasGameRef {
     isBuyFeatureActive = true;
     buyFeatureSpinsLeft = 10;
     _buyFeatureTotalWin = 0.0;
-    print('🎁 ПОЧИНАЄТЬСЯ BUY FEATURE з 10 спінами!');
 
-    int spinNumber = 1;
-    while (buyFeatureSpinsLeft > 0) {
-      print(
-        '🎰 Buy Feature спін $spinNumber (залишилось: $buyFeatureSpinsLeft)',
-      );
+    while (buyFeatureSpinsLeft > 0 && isBuyFeatureActive) {
+      // Додаємо перевірку чи buy feature все ще активний
+      if (!isBuyFeatureActive) break;
+
       await startSpinAnimation();
-      spinNumber++;
-      await Future.delayed(const Duration(milliseconds: 500));
+
+      // Перевіряємо знову після анімації
+      if (!isBuyFeatureActive) break;
+
+      await Future.delayed(
+        const Duration(milliseconds: 300),
+      ); // Прискорено з 500 до 300ms
     }
 
-    print(
-      '🎁 BUY FEATURE ЗАВЕРШЕНО! Загальний виграш: \$${_buyFeatureTotalWin.toStringAsFixed(2)}',
-    );
-
-    if (onBuyFeatureWinCallback != null) {
+    // Викликаємо callback тільки якщо buy feature не був перерваний
+    if (isBuyFeatureActive && onBuyFeatureWinCallback != null) {
       String winType = _getWinType(_buyFeatureTotalWin);
 
       AudioService().playBreakingSound();
@@ -179,83 +185,36 @@ class SlotAnimationGame extends FlameGame with HasGameRef {
   }
 
   Future<void> _animateSymbolsOut() async {
-    List<Future> animations = [];
-
-    if (useQuickAnimation) {
-      for (int row = 0; row < gridRows; row++) {
-        for (int col = 0; col < gridCols; col++) {
-          final symbol = gridSymbols[row][col];
-          symbol.animateOut(speedMultiplier: animationSpeedMultiplier);
-        }
-      }
-
-      final waitTime = (800 / animationSpeedMultiplier).round();
-      await Future.delayed(Duration(milliseconds: waitTime));
-    } else {
+    // Завжди використовуємо швидку анімацію (turbo spin)
+    for (int row = 0; row < gridRows; row++) {
       for (int col = 0; col < gridCols; col++) {
-        final delay = (col * 150 / animationSpeedMultiplier).round();
-
-        animations.add(
-          Future.delayed(Duration(milliseconds: delay), () async {
-            for (int row = 0; row < gridRows; row++) {
-              final symbol = gridSymbols[row][col];
-              symbol.animateOut(speedMultiplier: animationSpeedMultiplier);
-            }
-          }),
-        );
+        final symbol = gridSymbols[row][col];
+        symbol.animateOut(speedMultiplier: 2.0); // Максимальна швидкість
       }
-
-      await Future.wait(animations);
-      final waitTime = (1000 / animationSpeedMultiplier).round();
-      await Future.delayed(Duration(milliseconds: waitTime));
     }
+
+    final waitTime = (800 / 2.0).round(); // Прискорено
+    await Future.delayed(Duration(milliseconds: waitTime));
   }
 
   Future<void> _animateSymbolsIn() async {
-    List<Future> animations = [];
-
-    if (useQuickAnimation) {
-      for (int row = 0; row < gridRows; row++) {
-        for (int col = 0; col < gridCols; col++) {
-          final symbol = gridSymbols[row][col];
-
-          final randomSymbol = _getRandomSymbol();
-          await symbol.setSymbol(randomSymbol);
-
-          final rowDelay = (row * 30 / animationSpeedMultiplier).round();
-          Future.delayed(Duration(milliseconds: rowDelay), () {
-            symbol.animateIn(speedMultiplier: animationSpeedMultiplier);
-          });
-        }
-      }
-
-      final waitTime = (1000 / animationSpeedMultiplier).round();
-      await Future.delayed(Duration(milliseconds: waitTime));
-    } else {
+    // Завжди використовуємо швидку анімацію (turbo spin)
+    for (int row = 0; row < gridRows; row++) {
       for (int col = 0; col < gridCols; col++) {
-        final delay = (col * 150 / animationSpeedMultiplier).round();
+        final symbol = gridSymbols[row][col];
 
-        animations.add(
-          Future.delayed(Duration(milliseconds: delay), () async {
-            for (int row = 0; row < gridRows; row++) {
-              final symbol = gridSymbols[row][col];
+        final randomSymbol = _getRandomSymbol();
+        await symbol.setSymbol(randomSymbol);
 
-              final randomSymbol = _getRandomSymbol();
-              await symbol.setSymbol(randomSymbol);
-
-              final rowDelay = (row * 50 / animationSpeedMultiplier).round();
-              Future.delayed(Duration(milliseconds: rowDelay), () {
-                symbol.animateIn(speedMultiplier: animationSpeedMultiplier);
-              });
-            }
-          }),
-        );
+        final rowDelay = (row * 30 / 2.0).round(); // Прискорено
+        Future.delayed(Duration(milliseconds: rowDelay), () {
+          symbol.animateIn(speedMultiplier: 2.0); // Максимальна швидкість
+        });
       }
-
-      await Future.wait(animations);
-      final waitTime = (1200 / animationSpeedMultiplier).round();
-      await Future.delayed(Duration(milliseconds: waitTime));
     }
+
+    final waitTime = (1000 / 2.0).round(); // Прискорено
+    await Future.delayed(Duration(milliseconds: waitTime));
   }
 
   Future<void> _checkForWinningCombinations() async {
@@ -275,11 +234,7 @@ class SlotAnimationGame extends FlameGame with HasGameRef {
     }
 
     if (scatterCount > 0) {
-      print('🍭 Знайдено $scatterCount Scatter символів (lolipop)');
-
       if (!isBuyFeatureActive && scatterCount >= 4) {
-        print('🎁 ЗАПУСК BUY FEATURE! Знайдено $scatterCount Scatters');
-
         _stopAllAnimations();
         isAnimating = false;
         await startBuyFeatureFromScatter();
@@ -346,7 +301,9 @@ class SlotAnimationGame extends FlameGame with HasGameRef {
       symbol.animateWinOut();
     }
 
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(
+      const Duration(milliseconds: 300),
+    ); // Прискорено з 500 до 300ms
 
     Map<int, List<int>> winningPositions = {};
     for (var symbol in winningSymbols) {
@@ -372,7 +329,9 @@ class SlotAnimationGame extends FlameGame with HasGameRef {
       }
     }
 
-    await Future.delayed(const Duration(milliseconds: 800));
+    await Future.delayed(
+      const Duration(milliseconds: 500),
+    ); // Прискорено з 800 до 500ms
   }
 
   void _collectMultipliers() {
@@ -447,7 +406,7 @@ class SlotAnimationGame extends FlameGame with HasGameRef {
 
       symbolToPlace.setOriginalPosition(targetPosition);
 
-      final delay = targetRow * 80;
+      final delay = targetRow * 20; // Прискорено з 40 до 20ms
       Future.delayed(Duration(milliseconds: delay), () {
         symbolToPlace.animateGravityDrop(targetPosition);
       });
@@ -470,8 +429,6 @@ class SlotAnimationGame extends FlameGame with HasGameRef {
     isBuyFeatureActive = true;
     buyFeatureSpinsLeft = 10;
     _buyFeatureTotalWin = 0.0;
-    print('🎁 BUY FEATURE запущено через Scatter символи!');
-
     await activateBuyFeature();
   }
 
@@ -488,12 +445,30 @@ class SlotAnimationGame extends FlameGame with HasGameRef {
     }
   }
 
+  /// Публічний метод для зупинки всіх анімацій та скидання стану гри
+  void stopAllAnimations() {
+    isAnimating = false;
+    isBuyFeatureActive = false;
+    buyFeatureSpinsLeft = 0;
+    _multipliersCollectedThisSpin = false;
+    _buyFeatureTotalWin = 0.0;
+
+    // Скидуємо всі callbacks щоб уникнути виклику після dispose
+    onWinningsCallback = null;
+    onMultipliersCallback = null;
+    onSpinCompleteCallback = null;
+    onBuyFeatureWinCallback = null;
+    onBuyFeatureWinAccumulate = null;
+    onBuyFeatureComplete = null;
+    onScatterCallback = null;
+
+    _stopAllAnimations();
+    print('🛑 Всі анімації SlotAnimationGame зупинено та стан скинуто');
+  }
+
   void addToBuyFeatureWin(double winAmount) {
     if (isBuyFeatureActive) {
       _buyFeatureTotalWin += winAmount;
-      print(
-        '💰 Додано до buy feature: \$${winAmount.toStringAsFixed(2)}, загалом: \$${_buyFeatureTotalWin.toStringAsFixed(2)}',
-      );
     }
   }
 
@@ -517,7 +492,8 @@ class SlotAnimationGame extends FlameGame with HasGameRef {
   }
 }
 
-class SlotSymbol extends SpriteComponent with HasGameRef<SlotAnimationGame> {
+class SlotSymbol extends SpriteComponent
+    with HasGameReference<SlotAnimationGame> {
   String currentSymbolPath = '';
   late Vector2 originalPosition;
 
@@ -624,12 +600,19 @@ class SlotSymbol extends SpriteComponent with HasGameRef<SlotAnimationGame> {
 
     final moveEffect = MoveToEffect(
       targetPosition.clone(),
-      EffectController(duration: 0.6, curve: Curves.easeOut),
+      EffectController(
+        duration: 0.2,
+        curve: Curves.easeOut,
+      ), // Прискорено з 0.3 до 0.2
     );
 
     final shakeEffect = MoveByEffect(
       Vector2(0, -3),
-      EffectController(duration: 0.1, curve: Curves.bounceOut, startDelay: 0.5),
+      EffectController(
+        duration: 0.1,
+        curve: Curves.bounceOut,
+        startDelay: 0.15,
+      ), // Прискорено затримку з 0.2 до 0.15
     );
 
     add(moveEffect);

@@ -25,6 +25,18 @@ class _HomeScreenState extends State<HomeScreen> {
     _gameInstance = HomeAnimationGame();
     _initializeData();
     _startSpinButtonAnimation();
+
+    // Запускаємо фонову музику на домашньому екрані
+    print('🎵 HomeScreen initState - запуск фонової музики');
+    AudioService().playBackgroundMusic();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Додатково перевіряємо музику при зміні dependencies
+    print('🎵 HomeScreen didChangeDependencies - перевірка фонової музики');
+    AudioService().playBackgroundMusic();
   }
 
   Future<void> _initializeData() async {
@@ -95,41 +107,75 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Center(
               child: Column(
                 children: [
-                  const Text(
-                    'SWEET BONANZA',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 3,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black54,
-                          blurRadius: 8,
-                          offset: Offset(2, 2),
-                        ),
-                        Shadow(
-                          color: Colors.purple,
-                          blurRadius: 15,
-                          offset: Offset(0, 0),
-                        ),
-                      ],
+                  // Обгортаємо віджет Text у Container для додавання фону
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(
+                        216,
+                        226,
+                        223,
+                        65,
+                      ), // Колір фону
+                      borderRadius: BorderRadius.circular(
+                        10,
+                      ), // Закруглені кути
+                    ),
+                    child: const Text(
+                      'SWEET BONANZA',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 3,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black54,
+                            blurRadius: 8,
+                            offset: Offset(2, 2),
+                          ),
+                          Shadow(
+                            color: Colors.purple,
+                            blurRadius: 15,
+                            offset: Offset(0, 0),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 5),
-                  Text(
-                    'Balance: \$${_currentBalance.toStringAsFixed(2)}',
-                    style: const TextStyle(
-                      color: Colors.orange,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black54,
-                          blurRadius: 5,
-                          offset: Offset(1, 1),
-                        ),
-                      ],
+                  // Обгортаємо другий віджет Text у Container
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(
+                        228,
+                        226,
+                        223,
+                        65,
+                      ), // Інший колір фону
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      'Balance: ${_currentBalance.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        color: Color.fromARGB(178, 42, 238, 75),
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black54,
+                            blurRadius: 5,
+                            offset: Offset(1, 1),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -208,7 +254,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final double availableWidth = screenWidth * 0.60;
     final double availableHeight = screenHeight * 0.95;
 
-    final double gridWidth = availableWidth * 0.65;
+    final double gridWidth = availableWidth * 0.60;
     final double gridHeight = availableHeight * 0.9;
 
     return Container(
@@ -219,7 +265,7 @@ class _HomeScreenState extends State<HomeScreen> {
         border: Border.all(color: Colors.white, width: 3),
         boxShadow: [
           BoxShadow(
-            color: Colors.purple.withOpacity(0.3),
+            color: const Color.fromARGB(123, 39, 167, 176),
             blurRadius: 15,
             spreadRadius: 2,
           ),
@@ -227,11 +273,8 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
-        child: Container(
-          color: Colors.black.withOpacity(0.3),
-          child: GameWidget<HomeAnimationGame>.controlled(
-            gameFactory: () => _gameInstance,
-          ),
+        child: GameWidget<HomeAnimationGame>.controlled(
+          gameFactory: () => _gameInstance,
         ),
       ),
     );

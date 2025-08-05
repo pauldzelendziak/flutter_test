@@ -6,15 +6,15 @@ class BackgroundSlotViewModel extends ChangeNotifier {
   static const int rowCount = 6;
   static const int colCount = 5;
   final List<String> candyImages = [
-    'assets/images/candy1.png',
-    'assets/images/candy2.png',
-    'assets/images/candy3.png',
-    'assets/images/candy4.png',
-    'assets/images/candy5.png',
-    'assets/images/candy6.png',
-    'assets/images/candy7.png',
-    'assets/images/candy8.png',
-    'assets/images/candy9.png',
+    'assets/images/candy1.webp',
+    'assets/images/candy2.webp',
+    'assets/images/candy3.webp',
+    'assets/images/candy4.webp',
+    'assets/images/candy5.webp',
+    'assets/images/candy6.webp',
+    'assets/images/candy7.webp',
+    'assets/images/candy8.webp',
+    'assets/images/candy9.webp',
   ];
 
   late List<List<CandyModel?>> grid;
@@ -56,7 +56,9 @@ class BackgroundSlotViewModel extends ChangeNotifier {
       }
     }
     notifyListeners();
-    await Future.delayed(const Duration(milliseconds: 350));
+    await Future.delayed(
+      const Duration(milliseconds: 250),
+    ); // Прискорено з 350 до 250ms
     for (int row = 0; row < rowCount; row++) {
       for (int col = 0; col < colCount; col++) {
         explodingCells[row][col] = false;
@@ -77,27 +79,41 @@ class BackgroundSlotViewModel extends ChangeNotifier {
 
   Future<void> _playFallInColumns() async {
     _clearGrid();
-    await Future.delayed(const Duration(milliseconds: 250));
+    await Future.delayed(
+      const Duration(milliseconds: 200),
+    ); // Прискорено з 250 до 200ms
     for (int col = 0; col < colCount; col++) {
       for (int row = 0; row < rowCount; row++) {
         grid[row][col] = _randomCandy();
         animatedCells[row][col] = true;
         notifyListeners();
-        await Future.delayed(const Duration(milliseconds: 30));
+        await Future.delayed(
+          const Duration(milliseconds: 20),
+        ); // Прискорено з 30 до 20ms
       }
-      await Future.delayed(const Duration(milliseconds: 60));
+      await Future.delayed(
+        const Duration(milliseconds: 40),
+      ); // Прискорено з 60 до 40ms
     }
-    await Future.delayed(const Duration(milliseconds: 100));
+    await Future.delayed(
+      const Duration(milliseconds: 80),
+    ); // Прискорено з 100 до 80ms
   }
 
   Future<void> _startLoopingAnimation() async {
     while (true) {
       await _playFallInColumns();
-      await Future.delayed(const Duration(milliseconds: 600));
+      await Future.delayed(
+        const Duration(milliseconds: 400),
+      ); // Прискорено з 600 до 400ms
       await _playExplosion();
-      await Future.delayed(const Duration(milliseconds: 200));
+      await Future.delayed(
+        const Duration(milliseconds: 150),
+      ); // Прискорено з 200 до 150ms
       _clearGrid();
-      await Future.delayed(const Duration(milliseconds: 250));
+      await Future.delayed(
+        const Duration(milliseconds: 200),
+      ); // Прискорено з 250 до 200ms
     }
   }
 }

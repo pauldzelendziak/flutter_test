@@ -123,6 +123,22 @@ class AudioService with WidgetsBindingObserver {
     }
 
     try {
+      // Перевіряємо поточний стан плеєра
+      final currentState = _backgroundMusicPlayer.state;
+      print('🎵 Поточний стан плеєра: $currentState');
+
+      if (currentState == PlayerState.playing) {
+        print('🎵 Фонова музика вже грає');
+        return;
+      }
+
+      if (currentState == PlayerState.paused) {
+        print('🎵 Відновлюємо паузу фонової музики');
+        await _backgroundMusicPlayer.resume();
+        print('✅ Фонову музику відновлено');
+        return;
+      }
+
       print('🎵 Запускаємо sounds/backgroundmusic.mp3...');
       await _backgroundMusicPlayer.play(
         AssetSource('sounds/backgroundmusic.mp3'),
@@ -134,12 +150,21 @@ class AudioService with WidgetsBindingObserver {
   }
 
   Future<void> stopBackgroundMusic() async {
-    if (!_isInitialized) return;
+    print('🔇 Спроба зупинки фонової музики...');
+
+    if (!_isInitialized) {
+      print('❌ AudioService не ініціалізований');
+      return;
+    }
 
     try {
+      final currentState = _backgroundMusicPlayer.state;
+      print('🔇 Поточний стан плеєра перед зупинкою: $currentState');
+
       await _backgroundMusicPlayer.stop();
+      print('✅ Фонова музика зупинена');
     } catch (e) {
-      print('Помилка зупинки фонової музики: $e');
+      print('❌ Помилка зупинки фонової музики: $e');
     }
   }
 
@@ -180,16 +205,43 @@ class AudioService with WidgetsBindingObserver {
       print('🔊 Створюємо новий плеєр для звуку кліку...');
       final clickPlayer = AudioPlayer();
 
+      // Налаштовуємо режим плеєра для кращої сумісності
+      await clickPlayer.setPlayerMode(PlayerMode.lowLatency);
       await clickPlayer.setVolume(_currentSoundVolume);
 
       print('🔊 Запускаємо відтворення sounds/click.mp3...');
-      await clickPlayer.play(AssetSource('sounds/click.mp3'));
 
-      print('✅ Звук кліку запущено успішно');
+      // Спробуємо різні формати аудіо
+      try {
+        await clickPlayer.play(AssetSource('sounds/click.mp3'));
+        print('✅ Звук кліку запущено успішно (MP3)');
+      } catch (mp3Error) {
+        print('⚠️ Помилка MP3, спробуємо WAV: $mp3Error');
+        try {
+          await clickPlayer.play(AssetSource('sounds/click.wav'));
+          print('✅ Звук кліку запущено успішно (WAV)');
+        } catch (wavError) {
+          print('⚠️ Помилка WAV, спробуємо OGG: $wavError');
+          try {
+            await clickPlayer.play(AssetSource('sounds/click.ogg'));
+            print('✅ Звук кліку запущено успішно (OGG)');
+          } catch (oggError) {
+            print('❌ Всі формати не працюють, пропускаємо звук кліку');
+            clickPlayer.dispose();
+            return;
+          }
+        }
+      }
 
       clickPlayer.onPlayerComplete.listen((event) {
         print('🔊 Звук кліку завершено, звільняємо ресурси');
         clickPlayer.dispose();
+      });
+
+      clickPlayer.onPlayerStateChanged.listen((state) {
+        if (state == PlayerState.stopped) {
+          print('🔊 Звук кліку зупинено');
+        }
       });
     } catch (e) {
       print('❌ Помилка відтворення звуку кліку: $e');
@@ -213,16 +265,43 @@ class AudioService with WidgetsBindingObserver {
       print('🔊 Створюємо новий плеєр для pop звуку...');
       final popPlayer = AudioPlayer();
 
+      // Налаштовуємо режим плеєра для кращої сумісності
+      await popPlayer.setPlayerMode(PlayerMode.lowLatency);
       await popPlayer.setVolume(_currentSoundVolume);
 
       print('🔊 Запускаємо відтворення sounds/pop.mp3...');
-      await popPlayer.play(AssetSource('sounds/pop.mp3'));
 
-      print('✅ Pop звук запущено успішно');
+      // Спробуємо різні формати аудіо
+      try {
+        await popPlayer.play(AssetSource('sounds/pop.mp3'));
+        print('✅ Pop звук запущено успішно (MP3)');
+      } catch (mp3Error) {
+        print('⚠️ Помилка MP3, спробуємо WAV: $mp3Error');
+        try {
+          await popPlayer.play(AssetSource('sounds/pop.wav'));
+          print('✅ Pop звук запущено успішно (WAV)');
+        } catch (wavError) {
+          print('⚠️ Помилка WAV, спробуємо OGG: $wavError');
+          try {
+            await popPlayer.play(AssetSource('sounds/pop.ogg'));
+            print('✅ Pop звук запущено успішно (OGG)');
+          } catch (oggError) {
+            print('❌ Всі формати не працюють, пропускаємо pop звук');
+            popPlayer.dispose();
+            return;
+          }
+        }
+      }
 
       popPlayer.onPlayerComplete.listen((event) {
         print('🔊 Pop звук завершено, звільняємо ресурси');
         popPlayer.dispose();
+      });
+
+      popPlayer.onPlayerStateChanged.listen((state) {
+        if (state == PlayerState.stopped) {
+          print('🔊 Pop звук зупинено');
+        }
       });
     } catch (e) {
       print('❌ Помилка відтворення pop звуку: $e');
@@ -246,16 +325,46 @@ class AudioService with WidgetsBindingObserver {
       print('🔊 Створюємо новий плеєр для breaking звуку...');
       final breakingPlayer = AudioPlayer();
 
+      // Налаштовуємо режим плеєра для кращої сумісності
+      await breakingPlayer.setPlayerMode(PlayerMode.lowLatency);
       await breakingPlayer.setVolume(_currentSoundVolume);
 
       print('🔊 Запускаємо відтворення sounds/breaking.mp3...');
-      await breakingPlayer.play(AssetSource('sounds/breaking.mp3'));
 
-      print('✅ Breaking звук запущено успішно');
+      // Спробуємо різні формати аудіо
+      try {
+        await breakingPlayer.play(AssetSource('sounds/breaking.mp3'));
+        print('✅ Breaking звук запущено успішно (MP3)');
+      } catch (mp3Error) {
+        print('⚠️ Помилка MP3, спробуємо WAV: $mp3Error');
+        try {
+          await breakingPlayer.play(AssetSource('sounds/breaking.wav'));
+          print('✅ Breaking звук запущено успішно (WAV)');
+        } catch (wavError) {
+          print('⚠️ Помилка WAV, спробуємо OGG: $wavError');
+          try {
+            await breakingPlayer.play(AssetSource('sounds/breaking.ogg'));
+            print('✅ Breaking звук запущено успішно (OGG)');
+          } catch (oggError) {
+            print(
+              '❌ Всі формати не працюють, використовуємо pop звук як заміну',
+            );
+            // Використовуємо pop звук як заміну
+            await breakingPlayer.play(AssetSource('sounds/pop.mp3'));
+            print('✅ Використовуємо pop звук як заміну');
+          }
+        }
+      }
 
       breakingPlayer.onPlayerComplete.listen((event) {
         print('🔊 Breaking звук завершено, звільняємо ресурси');
         breakingPlayer.dispose();
+      });
+
+      breakingPlayer.onPlayerStateChanged.listen((state) {
+        if (state == PlayerState.stopped) {
+          print('🔊 Breaking звук зупинено');
+        }
       });
     } catch (e) {
       print('❌ Помилка відтворення breaking звуку: $e');

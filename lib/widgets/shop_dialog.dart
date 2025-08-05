@@ -117,7 +117,7 @@ class _ShopDialogState extends State<ShopDialog> {
           ),
           const SizedBox(width: 8),
           Text(
-            'Balance: \$${_balance.toStringAsFixed(2)}',
+            'Balance: ${_balance.toStringAsFixed(2)}',
             style: const TextStyle(
               color: Colors.white,
               fontSize: 14,
@@ -245,7 +245,7 @@ class _ShopDialogState extends State<ShopDialog> {
                     ),
                     if (!isPurchased) ...[
                       Text(
-                        '\$${price}',
+                        price.toString(),
                         style: TextStyle(
                           color: canAfford ? Colors.green : Colors.red,
                           fontSize: 14,

@@ -4,10 +4,10 @@ import 'package:flame/game.dart';
 import 'package:flame/effects.dart';
 import 'package:flutter/material.dart';
 
-class HomeAnimationGame extends FlameGame with HasGameRef {
+class HomeAnimationGame extends FlameGame with HasGameReference {
   static const int gridRows = 5;
   static const int gridCols = 6;
-  static const double symbolSize = 45.0;
+  static const double symbolSize = 40.0;
   static const double symbolSpacing = 4.0;
 
   late double gridStartX;
@@ -17,28 +17,28 @@ class HomeAnimationGame extends FlameGame with HasGameRef {
   bool _shouldContinueAnimation = true;
 
   static const List<String> candySymbols = [
-    'assets/images/candy1.png',
-    'assets/images/candy2.png',
-    'assets/images/candy3.png',
-    'assets/images/candy4.png',
-    'assets/images/candy5.png',
-    'assets/images/candy6.png',
-    'assets/images/candy7.png',
-    'assets/images/candy8.png',
-    'assets/images/candy9.png',
+    'assets/images/candy1.webp',
+    'assets/images/candy2.webp',
+    'assets/images/candy3.webp',
+    'assets/images/candy4.webp',
+    'assets/images/candy5.webp',
+    'assets/images/candy6.webp',
+    'assets/images/candy7.webp',
+    'assets/images/candy8.webp',
+    'assets/images/candy9.webp',
   ];
 
   static const List<String> multiplierSymbols = [
-    'assets/images/multi1.png',
-    'assets/images/multi2.png',
-    'assets/images/multi4.png',
-    'assets/images/multi8.png',
-    'assets/images/multi20.png',
-    'assets/images/multi50.png',
-    'assets/images/multi100.png',
+    'assets/images/multi1.webp',
+    'assets/images/multi2.webp',
+    'assets/images/multi4.webp',
+    'assets/images/multi8.webp',
+    'assets/images/multi20.webp',
+    'assets/images/multi50.webp',
+    'assets/images/multi100.webp',
   ];
 
-  static const String scatterSymbol = 'assets/images/lolipop.png';
+  static const String scatterSymbol = 'assets/images/lolipop.webp';
 
   @override
   Color backgroundColor() {
@@ -169,7 +169,8 @@ class HomeAnimationGame extends FlameGame with HasGameRef {
   }
 }
 
-class HomeSymbol extends SpriteComponent with HasGameRef<HomeAnimationGame> {
+class HomeSymbol extends SpriteComponent
+    with HasGameReference<HomeAnimationGame> {
   String currentSymbolPath = '';
   late Vector2 originalPosition;
 

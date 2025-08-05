@@ -220,7 +220,7 @@ class _BetSettingsDialogWidgetState extends State<_BetSettingsDialogWidget> {
 
                     _buildSettingRow(
                       'COIN VALUE',
-                      '\$${coinValues[currentCoinIndex].toStringAsFixed(2)}',
+                      coinValues[currentCoinIndex].toStringAsFixed(2),
                       () {
                         if (currentCoinIndex > 0) {
                           currentCoinIndex--;
@@ -239,7 +239,7 @@ class _BetSettingsDialogWidgetState extends State<_BetSettingsDialogWidget> {
 
                     _buildSettingRow(
                       'TOTAL BET',
-                      '\$${totalBetValues[currentTotalBetIndex].toStringAsFixed(2)}',
+                      totalBetValues[currentTotalBetIndex].toStringAsFixed(2),
                       () {
                         if (currentTotalBetIndex > 0) {
                           currentTotalBetIndex--;
@@ -284,34 +284,6 @@ class _BetSettingsDialogWidgetState extends State<_BetSettingsDialogWidget> {
                     ),
 
                     const SizedBox(height: 20),
-
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.blue.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.blue, width: 1),
-                      ),
-                      child: const Row(
-                        children: [
-                          Icon(
-                            Icons.info_outline,
-                            color: Colors.lightBlue,
-                            size: 20,
-                          ),
-                          SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              'Зміни автоматично застосовуються',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
                   ],
                 ),
               ),

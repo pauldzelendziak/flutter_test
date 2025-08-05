@@ -31,8 +31,6 @@ class _AutoplaySettingsDialogWidgetState
   static const List<int> autoplaySteps = [10, 20, 30, 50, 70, 100, 500, 1000];
 
   int selectedAutoplayCount = 10;
-  bool quickSpinEnabled = false;
-  bool turboSpinEnabled = false;
 
   @override
   void initState() {
@@ -46,8 +44,6 @@ class _AutoplaySettingsDialogWidgetState
       listen: false,
     );
     selectedAutoplayCount = gameViewModel.autoplayCount;
-    quickSpinEnabled = gameViewModel.quickSpinEnabled;
-    turboSpinEnabled = gameViewModel.turboSpinEnabled;
   }
 
   void _applySettings() {
@@ -56,11 +52,7 @@ class _AutoplaySettingsDialogWidgetState
       listen: false,
     );
 
-    gameViewModel.setAutoplaySettings(
-      autoplayCount: selectedAutoplayCount,
-      quickSpin: quickSpinEnabled,
-      turboSpin: turboSpinEnabled,
-    );
+    gameViewModel.setAutoplaySettings(autoplayCount: selectedAutoplayCount);
 
     gameViewModel.startAutoplay();
 
@@ -77,11 +69,7 @@ class _AutoplaySettingsDialogWidgetState
       listen: false,
     );
 
-    gameViewModel.setAutoplaySettings(
-      autoplayCount: selectedAutoplayCount,
-      quickSpin: quickSpinEnabled,
-      turboSpin: turboSpinEnabled,
-    );
+    gameViewModel.setAutoplaySettings(autoplayCount: selectedAutoplayCount);
 
     Navigator.of(context).pop();
   }
@@ -104,7 +92,7 @@ class _AutoplaySettingsDialogWidgetState
           border: Border.all(color: Colors.amber, width: 2),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.5),
+              color: const Color.fromRGBO(0, 0, 0, 0.5),
               blurRadius: 15,
               spreadRadius: 3,
             ),
@@ -128,7 +116,7 @@ class _AutoplaySettingsDialogWidgetState
               child: Row(
                 children: [
                   Image.asset(
-                    'assets/images/autoplaysettings.png',
+                    'assets/images/autoplaysettings.webp',
                     width: 32,
                     height: 32,
                     errorBuilder: (context, error, stackTrace) {
@@ -180,7 +168,7 @@ class _AutoplaySettingsDialogWidgetState
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.3),
+                        color: const Color.fromRGBO(0, 0, 0, 0.5),
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(color: Colors.amber, width: 1),
                       ),
@@ -225,7 +213,12 @@ class _AutoplaySettingsDialogWidgetState
                               thumbShape: const RoundSliderThumbShape(
                                 enabledThumbRadius: 12,
                               ),
-                              overlayColor: Colors.green.withOpacity(0.2),
+                              overlayColor: const Color.fromRGBO(
+                                76,
+                                175,
+                                80,
+                                0.5,
+                              ),
                               trackHeight: 4,
                             ),
                             child: Slider(
@@ -249,62 +242,7 @@ class _AutoplaySettingsDialogWidgetState
 
                     const SizedBox(height: 30),
 
-                    Row(
-                      children: [
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                turboSpinEnabled = !turboSpinEnabled;
-                                if (turboSpinEnabled) {
-                                  quickSpinEnabled = false;
-                                }
-                              });
-                            },
-                            child: _buildSpeedCheckbox(
-                              title: 'TURBO\nSPIN',
-                              isEnabled: turboSpinEnabled,
-                              onChanged: (value) {
-                                setState(() {
-                                  turboSpinEnabled = value;
-                                  if (value) {
-                                    quickSpinEnabled = false;
-                                  }
-                                });
-                              },
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 15),
-
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                quickSpinEnabled = !quickSpinEnabled;
-                                if (quickSpinEnabled) {
-                                  turboSpinEnabled = false;
-                                }
-                              });
-                            },
-                            child: _buildSpeedCheckbox(
-                              title: 'QUICK\nSPIN',
-                              isEnabled: quickSpinEnabled,
-                              onChanged: (value) {
-                                setState(() {
-                                  quickSpinEnabled = value;
-                                  if (value) {
-                                    turboSpinEnabled = false;
-                                  }
-                                });
-                              },
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 15),
-                      ],
-                    ),
-
+                    // Видаляємо секцію налаштування швидкості, оскільки завжди використовуємо turbo spin
                     const SizedBox(height: 30),
 
                     GestureDetector(
@@ -337,54 +275,6 @@ class _AutoplaySettingsDialogWidgetState
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildSpeedCheckbox({
-    required String title,
-    required bool isEnabled,
-    required ValueChanged<bool> onChanged,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: isEnabled ? Colors.green : Colors.grey,
-          width: 2,
-        ),
-      ),
-      child: Column(
-        children: [
-          Container(
-            width: 24,
-            height: 24,
-            decoration: BoxDecoration(
-              color: isEnabled ? Colors.green : Colors.transparent,
-              border: Border.all(
-                color: isEnabled ? Colors.green : Colors.grey,
-                width: 2,
-              ),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: isEnabled
-                ? const Icon(Icons.check, color: Colors.white, size: 16)
-                : null,
-          ),
-          const SizedBox(height: 10),
-
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: isEnabled ? Colors.white : Colors.grey[400],
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
       ),
     );
   }

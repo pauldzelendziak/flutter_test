@@ -28,7 +28,9 @@ flutter:
     - assets/images/ 
     - assets/sounds/ 
 
-flutter_icons:
+flutter_launcher_icons:
   android: true
-  ios: true
-  image_path: "assets/icon/app_icon.png"
+  ios: false
+  image_path: "assets/icon/icon.png"
+  adaptive_icon_background: "assets/icon/icon_bkg.png"
+  adaptive_icon_foreground: "assets/icon/icon_frg.png"
