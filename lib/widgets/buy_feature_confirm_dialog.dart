@@ -63,15 +63,6 @@ class BuyFeatureConfirmDialog {
                             ),
                           ],
                         ),
-                        child: const Text(
-                          'BUY FEATURE',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1,
-                          ),
-                        ),
                       ),
 
                       const SizedBox(height: 16),
@@ -79,23 +70,6 @@ class BuyFeatureConfirmDialog {
                       // Текст підтвердження
                       Column(
                         children: [
-                          const Text(
-                            'ARE YOU SURE YOU',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const Text(
-                            'WANT TO PURCHASE',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 12,
@@ -126,7 +100,7 @@ class BuyFeatureConfirmDialog {
                           ),
                           const SizedBox(height: 5),
                           const Text(
-                            'AT THE COST OF',
+                            'FOR COST :',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 14,
@@ -154,7 +128,7 @@ class BuyFeatureConfirmDialog {
                               ],
                             ),
                             child: Text(
-                              '\$${price.toStringAsFixed(0)}',
+                              '\$${price.toInt()}',
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 20,
@@ -212,7 +186,7 @@ class BuyFeatureConfirmDialog {
                               ),
                               child: const Center(
                                 child: Text(
-                                  'NO',
+                                  'CANCEL',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 16,
@@ -256,7 +230,7 @@ class BuyFeatureConfirmDialog {
                               ),
                               child: const Center(
                                 child: Text(
-                                  'YES',
+                                  'BUY',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 16,

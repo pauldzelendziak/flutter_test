@@ -23,14 +23,14 @@ class _ShopDialogState extends State<ShopDialog> {
 
   final Map<String, int> _backgroundPrices = {
     'bg': 0,
-    'bg2': 10000,
-    'bg3': 15000,
-    'bg4': 20000,
-    'bg5': 25000,
-    'bg6': 30000,
-    'bg7': 35000,
-    'bg8': 40000,
-    'bg9': 45000,
+    'bg2': 1000,
+    'bg3': 1500,
+    'bg4': 2000,
+    'bg5': 2500,
+    'bg6': 3000,
+    'bg7': 3500,
+    'bg8': 4000,
+    'bg9': 4500,
   };
 
   @override
@@ -117,7 +117,7 @@ class _ShopDialogState extends State<ShopDialog> {
           ),
           const SizedBox(width: 8),
           Text(
-            'Balance: ${_balance.toStringAsFixed(2)}',
+            'Balance: ${_balance.toInt()}',
             style: const TextStyle(
               color: Colors.white,
               fontSize: 14,

@@ -46,12 +46,28 @@ class _SlotAnimationWidgetState extends State<SlotAnimationWidget> {
     game.onWinningsCallback = widget.onWinningsFound;
     game.onMultipliersCallback = widget.onMultipliersFound;
     game.onSpinCompleteCallback = widget.onSpinComplete;
-    game.onBuyFeatureWinCallback = widget.onBuyFeatureComplete;
+    game.onBuyFeatureComplete = (totalWin, winType) {
+      // Скидаємо прапор після завершення buy feature
+      hasBuyFeatureActivated = false;
+      print('🎁 Buy feature завершено, скидаємо hasBuyFeatureActivated');
+
+      // Викликаємо оригінальний callback тільки якщо віджет ще змонтований
+      if (mounted && widget.onBuyFeatureComplete != null) {
+        widget.onBuyFeatureComplete!(totalWin, winType);
+      } else {
+        print(
+          '⚠️ Buy feature завершено, але віджет вже знищений - callback пропущено',
+        );
+      }
+    };
+    print(
+      '🎯 onBuyFeatureComplete встановлено: ${widget.onBuyFeatureComplete != null}',
+    );
     game.onScatterCallback = widget.onScatterCallback;
 
     game.onBuyFeatureWinAccumulate = (winAmount) {
       game.addToBuyFeatureWin(winAmount);
-      if (widget.onBuyFeatureWinAccumulate != null) {
+      if (mounted && widget.onBuyFeatureWinAccumulate != null) {
         widget.onBuyFeatureWinAccumulate!(winAmount);
       }
     };
@@ -61,10 +77,7 @@ class _SlotAnimationWidgetState extends State<SlotAnimationWidget> {
     }
 
     // Завжди використовуємо максимальну швидкість
-    game.setAnimationSettings(
-      useQuick: true,
-      speedMultiplier: 2.0,
-    );
+    game.setAnimationSettings(useQuick: true, speedMultiplier: 2.0);
   }
 
   @override
@@ -72,15 +85,14 @@ class _SlotAnimationWidgetState extends State<SlotAnimationWidget> {
     super.didUpdateWidget(oldWidget);
 
     // Завжди використовуємо максимальну швидкість
-    game.setAnimationSettings(
-      useQuick: true,
-      speedMultiplier: 2.0,
-    );
+    game.setAnimationSettings(useQuick: true, speedMultiplier: 2.0);
 
     if (widget.shouldBuyFeature && !hasBuyFeatureActivated) {
+      print('🎁 shouldBuyFeature=true, запускаємо buy feature');
       hasBuyFeatureActivated = true;
       _startBuyFeature();
     } else if (!widget.shouldBuyFeature) {
+      print('🎁 shouldBuyFeature=false, скидаємо hasBuyFeatureActivated');
       hasBuyFeatureActivated = false;
     }
 
@@ -93,7 +105,12 @@ class _SlotAnimationWidgetState extends State<SlotAnimationWidget> {
   }
 
   Future<void> _startBuyFeature() async {
-    await Future.delayed(const Duration(milliseconds: 50)); // Прискорено з 100 до 50ms
+    print(
+      '🎁 _startBuyFeature викликано, hasBuyFeatureActivated=$hasBuyFeatureActivated',
+    );
+    await Future.delayed(
+      const Duration(milliseconds: 50),
+    ); // Прискорено з 100 до 50ms
     await game.activateBuyFeature();
 
     if (widget.onAnimationComplete != null) {
@@ -103,13 +120,38 @@ class _SlotAnimationWidgetState extends State<SlotAnimationWidget> {
   }
 
   Future<void> _startAnimation() async {
-    await Future.delayed(const Duration(milliseconds: 50)); // Прискорено з 100 до 50ms
+    await Future.delayed(
+      const Duration(milliseconds: 50),
+    ); // Прискорено з 100 до 50ms
     await game.startSpinAnimation();
 
     if (widget.onAnimationComplete != null) {
       final currentGrid = game.getCurrentGrid();
       widget.onAnimationComplete!(currentGrid);
     }
+  }
+
+  void resetFlags() {
+    print('🎁 Скидання прапорів анімації');
+    hasAnimated = false;
+    hasBuyFeatureActivated = false;
+  }
+
+  @override
+  void dispose() {
+    print('🎁 SlotAnimationWidget dispose - скидаємо прапори');
+    hasAnimated = false;
+    hasBuyFeatureActivated = false;
+
+    // Очищуємо всі callbacks щоб уникнути викликів після dispose
+    game.onWinningsCallback = null;
+    game.onMultipliersCallback = null;
+    game.onSpinCompleteCallback = null;
+    game.onBuyFeatureComplete = null;
+    game.onBuyFeatureWinAccumulate = null;
+    game.onScatterCallback = null;
+
+    super.dispose();
   }
 
   @override

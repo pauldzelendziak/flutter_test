@@ -17,7 +17,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late HomeAnimationGame _gameInstance;
   bool _isSpinButtonAnimating = false;
   String _currentBackground = 'bg';
-  double _currentBalance = 100000.0;
+  double _currentBalance = 2000.0;
 
   @override
   void initState() {
@@ -163,7 +163,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
-                      'Balance: ${_currentBalance.toStringAsFixed(2)}',
+                      'Balance: ${_currentBalance.toInt()}',
                       style: const TextStyle(
                         color: Color.fromARGB(178, 42, 238, 75),
                         fontSize: 16,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_test_task/viewmodels/game_slot_viewmodel.dart';
+import 'package:flutter_test_task/services/audio_service.dart';
 
 class AutoplaySettingsDialog {
   static Future<void> show(
@@ -29,13 +30,22 @@ class _AutoplaySettingsDialogWidget extends StatefulWidget {
 class _AutoplaySettingsDialogWidgetState
     extends State<_AutoplaySettingsDialogWidget> {
   static const List<int> autoplaySteps = [10, 20, 30, 50, 70, 100, 500, 1000];
-
+  bool _soundEnabled = true;
+  double _musicVolume = 100.0;
   int selectedAutoplayCount = 10;
-
   @override
   void initState() {
     super.initState();
     _initializeFromViewModel();
+    _loadCurrentSettings();
+  }
+
+  void _loadCurrentSettings() {
+    final audioService = AudioService();
+    setState(() {
+      _soundEnabled = audioService.isSoundEnabled;
+      _musicVolume = audioService.currentMusicVolume * 100.0;
+    });
   }
 
   void _initializeFromViewModel() {
@@ -138,11 +148,25 @@ class _AutoplaySettingsDialogWidgetState
                   ),
                   const Spacer(),
                   GestureDetector(
-                    onTap: _saveSettingsAndClose,
-                    child: const Icon(
-                      Icons.close,
-                      color: Colors.amber,
-                      size: 24,
+                    onTap: () {
+                      if (_soundEnabled) {
+                        AudioService().playClickSound();
+                      }
+                      Navigator.of(context).pop();
+                    },
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.2),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.red, width: 2),
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        color: Colors.white,
+                        size: 24,
+                      ),
                     ),
                   ),
                 ],

@@ -9,6 +9,7 @@ import 'package:flutter_test_task/animations/slot_animation.dart';
 import 'package:flutter_test_task/services/audio_service.dart';
 import 'package:flutter_test_task/services/storage_service.dart';
 import 'package:flutter_test_task/widgets/buy_feature_confirm_dialog.dart';
+import 'package:flutter_test_task/widgets/buy_feature_win_dialog.dart';
 import 'dart:math' as math;
 
 class SlotSpinScreen extends StatefulWidget {
@@ -72,20 +73,6 @@ class _SlotSpinScreenState extends State<SlotSpinScreen>
     // Встановлюємо прапор що віджет знищується
     _isDisposing = true;
 
-    // Зупиняємо автоплей якщо він активний
-    try {
-      final gameViewModel = Provider.of<GameSlotViewModel>(
-        context,
-        listen: false,
-      );
-      if (gameViewModel.isAutoplayActive) {
-        gameViewModel.stopAutoplay();
-        print('🛑 Автоплей зупинено в dispose');
-      }
-    } catch (e) {
-      print('⚠️ Помилка зупинки автоплей в dispose: $e');
-    }
-
     // Зупиняємо всі анімації контролера
     if (_winAnimationController.isAnimating) {
       _winAnimationController.stop();
@@ -101,6 +88,7 @@ class _SlotSpinScreenState extends State<SlotSpinScreen>
     if (_slotGame != null) {
       try {
         _slotGame!.stopAllAnimations();
+        print('🛑 Всі анімації SlotAnimationGame зупинено в dispose');
       } catch (e) {
         print('⚠️ Помилка при зупинці анімацій в dispose: $e');
       }
@@ -131,7 +119,35 @@ class _SlotSpinScreenState extends State<SlotSpinScreen>
     // Відтворюємо звук кліку СПОЧАТКУ
     AudioService().playClickSound();
 
-    // ОДРАЗУ робимо навігацію перед будь-якими іншими операціями
+    // СПОЧАТКУ скидаємо всі прапори ПЕРЕД навігацією
+    try {
+      final gameViewModel = Provider.of<GameSlotViewModel>(
+        context,
+        listen: false,
+      );
+
+      // Повністю скидаємо всі прапори включаючи buy feature
+      gameViewModel.resetAllFlags();
+      print('🎁 Всі прапори ViewModel скинуто перед навігацією');
+
+      // Зупиняємо автоплей якщо він активний
+      if (gameViewModel.isAutoplayActive) {
+        gameViewModel.stopAutoplay();
+        print('🛑 Автоплей зупинено');
+      }
+    } catch (e) {
+      print('⚠️ Помилка при отриманні GameSlotViewModel: $e');
+    }
+
+    // Зупиняємо всі анімації та скидаємо стан buy feature в SlotAnimationGame
+    if (_slotGame != null) {
+      _slotGame!.stopAllAnimations();
+      print(
+        '🎮 Всі анімації SlotAnimationGame зупинено та buy feature скинуто',
+      );
+    }
+
+    // Тепер робимо навігацію
     if (mounted) {
       print('🏠 Навігація на головний екран...');
       Navigator.of(
@@ -142,22 +158,6 @@ class _SlotSpinScreenState extends State<SlotSpinScreen>
 
     // Тепер встановлюємо прапор що віджет знищується
     _isDisposing = true;
-
-    // Отримуємо GameSlotViewModel для зупинки всіх процесів
-    try {
-      final gameViewModel = Provider.of<GameSlotViewModel>(
-        context,
-        listen: false,
-      );
-
-      // СПОЧАТКУ зупиняємо автоплей якщо він активний
-      if (gameViewModel.isAutoplayActive) {
-        gameViewModel.stopAutoplay();
-        print('🛑 Автоплей зупинено');
-      }
-    } catch (e) {
-      print('⚠️ Помилка при отриманні GameSlotViewModel: $e');
-    }
 
     // Зупиняємо всі анімації та спіни
     if (mounted) {
@@ -180,16 +180,6 @@ class _SlotSpinScreenState extends State<SlotSpinScreen>
 
     // Видаляємо всі listeners з анімації щоб уникнути setState після dispose
     _winAnimation.removeListener(() {});
-
-    // Зупиняємо анімації слотів через SlotGame
-    if (_slotGame != null) {
-      try {
-        _slotGame!.stopAllAnimations();
-        print('🎰 Всі анімації слотів зупинено');
-      } catch (e) {
-        print('⚠️ Помилка при зупинці анімацій слотів: $e');
-      }
-    }
 
     // НЕ зупиняємо фонову музику тут - HomeScreen сам її керуватиме
     print('🎵 Залишаємо фонову музику для HomeScreen');
@@ -341,7 +331,7 @@ class _SlotSpinScreenState extends State<SlotSpinScreen>
                             ],
                           ),
                           child: Text(
-                            '\$${_currentAnimatedWin.toStringAsFixed(2)}',
+                            '\$${_currentAnimatedWin.toInt()}',
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 40,
@@ -379,38 +369,14 @@ class _SlotSpinScreenState extends State<SlotSpinScreen>
                 ? null
                 : _returnToHomeScreen, // Відключаємо кнопку якщо вже відбувається повернення
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: _isDisposing
-                      ? [
-                          Colors.grey,
-                          Colors.grey.shade600,
-                        ] // Сіра якщо відключена
-                      : [Colors.blue, Colors.blueAccent],
-                ),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.white, width: 1),
+                color: Colors.red.withOpacity(0.2),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.red, width: 2),
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.home,
-                    color: _isDisposing ? Colors.grey.shade400 : Colors.white,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    'HOME',
-                    style: TextStyle(
-                      color: _isDisposing ? Colors.grey.shade400 : Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
+              child: const Icon(Icons.close, color: Colors.white, size: 24),
             ),
           ),
           const SizedBox(width: 8),
@@ -573,7 +539,7 @@ class _SlotSpinScreenState extends State<SlotSpinScreen>
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Text(
-                                      'BUY FEATURE',
+                                      'AUTOSPIN',
                                       style: TextStyle(
                                         color: canBuy
                                             ? const Color.fromARGB(
@@ -589,7 +555,8 @@ class _SlotSpinScreenState extends State<SlotSpinScreen>
                                     ),
                                     Text(
                                       gameViewModel.buyFeaturePrice
-                                          .toStringAsFixed(0),
+                                          .toInt()
+                                          .toString(),
                                       style: TextStyle(
                                         color: canBuy
                                             ? const Color.fromARGB(
@@ -658,7 +625,8 @@ class _SlotSpinScreenState extends State<SlotSpinScreen>
                                     ),
                                     Text(
                                       gameViewModel.effectiveBetAmount
-                                          .toStringAsFixed(2),
+                                          .toInt()
+                                          .toString(),
                                       style: const TextStyle(
                                         color: Color.fromRGBO(81, 245, 16, 1),
                                         fontSize: 14,
@@ -962,46 +930,28 @@ class _SlotSpinScreenState extends State<SlotSpinScreen>
   }
 
   void _showBuyFeatureWinAnimation(double totalWin, String winType) {
+    print(
+      '🎯 _showBuyFeatureWinAnimation викликано з totalWin: ${totalWin.toInt()}, winType: $winType',
+    );
+
     // Перевіряємо чи віджет ще змонтований перед початком анімації
-    if (!mounted || _isDisposing) return;
+    if (!mounted || _isDisposing) {
+      print('⚠️ Віджет не змонтований або знищується, виходимо');
+      return;
+    }
 
-    AudioService().playBreakingSound();
+    // Скидаємо прапор buy feature
+    final gameViewModel = Provider.of<GameSlotViewModel>(
+      context,
+      listen: false,
+    );
+    gameViewModel.resetBuyFeature();
 
+    // Показуємо виграшний діалог
     if (mounted && !_isDisposing) {
-      setState(() {
-        _showBuyFeatureWin = true;
-        _buyFeatureWinAmount = totalWin;
-        _buyFeatureWinType = winType;
-        _currentAnimatedWin = 0.0;
-      });
+      print('🎮 Показуємо BuyFeatureWinDialog');
+      BuyFeatureWinDialog.show(context, totalWin, winType);
     }
-
-    // Створюємо listener для анімації з перевіркою mounted
-    void animationListener() {
-      if (mounted && !_isDisposing) {
-        setState(() {
-          _currentAnimatedWin = _buyFeatureWinAmount * _winAnimation.value;
-        });
-      }
-    }
-
-    _winAnimation.addListener(animationListener);
-
-    _winAnimationController.forward().then((_) {
-      // Видаляємо listener після завершення анімації
-      _winAnimation.removeListener(animationListener);
-
-      Future.delayed(const Duration(seconds: 2), () {
-        // Прискорено з 3 до 2 секунд
-        if (mounted && !_isDisposing) {
-          setState(() {
-            _showBuyFeatureWin = false;
-            _currentAnimatedWin = 0.0;
-          });
-          _winAnimationController.reset();
-        }
-      });
-    });
   }
 
   Widget _buildAnimatedSlotGrid() {
@@ -1065,7 +1015,7 @@ class _SlotSpinScreenState extends State<SlotSpinScreen>
                     vm.onBuyFeatureWinAccumulate!(winAmount);
                   }
                   print(
-                    '💰 Накопичення виграшу buy feature: \$${winAmount.toStringAsFixed(2)}',
+                    '💰 Накопичення виграшу buy feature: \$${winAmount.toInt()}',
                   );
                 },
                 onScatterCallback: (scatterCount) {
@@ -1128,7 +1078,7 @@ class _SlotSpinScreenState extends State<SlotSpinScreen>
                                   ),
                                 ),
                                 TextSpan(
-                                  text: gameViewModel.credit.toStringAsFixed(2),
+                                  text: gameViewModel.credit.toInt().toString(),
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 14,
@@ -1152,7 +1102,8 @@ class _SlotSpinScreenState extends State<SlotSpinScreen>
                                 ),
                                 TextSpan(
                                   text: gameViewModel.effectiveBetAmount
-                                      .toStringAsFixed(2),
+                                      .toInt()
+                                      .toString(),
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 12,

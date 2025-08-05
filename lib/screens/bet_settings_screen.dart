@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_test_task/viewmodels/game_slot_viewmodel.dart';
+import 'package:flutter_test_task/services/audio_service.dart';
 
 class BetSettingsDialog {
   static Future<void> show(BuildContext context) {
@@ -21,51 +22,18 @@ class _BetSettingsDialogWidget extends StatefulWidget {
 }
 
 class _BetSettingsDialogWidgetState extends State<_BetSettingsDialogWidget> {
-  static const List<int> betValues = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-  static const List<double> coinValues = [0.01, 0.03, 0.10, 0.20, 0.50];
-  static const List<double> totalBetValues = [
-    0.20,
-    0.40,
-    0.60,
-    0.80,
-    1.20,
-    1.40,
-    1.60,
-    1.80,
-    2.40,
-    3.0,
-    3.60,
-    4.0,
-    4.20,
-    4.80,
-    5.0,
-    5.4,
-    6.0,
-    7,
-    8,
-    9,
-    10,
-    12,
-    14,
-    16,
-    18,
-    20,
-    24,
-    28,
-    30,
-    32,
-    36,
-    40,
-    50,
-    60,
-    70,
-    80,
-    90,
-    100,
-  ];
+  static const List<int> totalBetValues = [1, 5, 10, 25, 50, 100];
+  bool _soundEnabled = true;
+  double _musicVolume = 100.0;
 
-  int currentBetIndex = 0;
-  int currentCoinIndex = 0;
+  void _loadCurrentSettings() {
+    final audioService = AudioService();
+    setState(() {
+      _soundEnabled = audioService.isSoundEnabled;
+      _musicVolume = audioService.currentMusicVolume * 100.0;
+    });
+  }
+
   int currentTotalBetIndex = 0;
 
   @override
@@ -82,18 +50,16 @@ class _BetSettingsDialogWidgetState extends State<_BetSettingsDialogWidget> {
 
     currentTotalBetIndex = _findClosestIndex(
       totalBetValues,
-      gameViewModel.betAmount,
+      gameViewModel.betAmount.toInt(),
     );
-    currentBetIndex = 4;
-    currentCoinIndex = 2;
   }
 
-  int _findClosestIndex(List<double> values, double target) {
+  int _findClosestIndex(List<int> values, int target) {
     int closestIndex = 0;
-    double minDifference = (values[0] - target).abs();
+    int minDifference = (values[0] - target).abs();
 
     for (int i = 1; i < values.length; i++) {
-      double difference = (values[i] - target).abs();
+      int difference = (values[i] - target).abs();
       if (difference < minDifference) {
         minDifference = difference;
         closestIndex = i;
@@ -103,38 +69,22 @@ class _BetSettingsDialogWidgetState extends State<_BetSettingsDialogWidget> {
   }
 
   void _updateTotalBet() {
-    double calculatedBet =
-        betValues[currentBetIndex] * coinValues[currentCoinIndex];
-    currentTotalBetIndex = _findClosestIndex(totalBetValues, calculatedBet);
-
     final gameViewModel = Provider.of<GameSlotViewModel>(
       context,
       listen: false,
     );
-    gameViewModel.setBetAmount(totalBetValues[currentTotalBetIndex]);
-
-    setState(() {});
-  }
-
-  void _updateTotalBetFromDirect() {
-    final gameViewModel = Provider.of<GameSlotViewModel>(
-      context,
-      listen: false,
-    );
-    gameViewModel.setBetAmount(totalBetValues[currentTotalBetIndex]);
+    gameViewModel.setBetAmount(totalBetValues[currentTotalBetIndex].toDouble());
     setState(() {});
   }
 
   void _setBetMax() {
-    currentBetIndex = betValues.length - 1;
-    currentCoinIndex = coinValues.length - 1;
     currentTotalBetIndex = totalBetValues.length - 1;
 
     final gameViewModel = Provider.of<GameSlotViewModel>(
       context,
       listen: false,
     );
-    gameViewModel.setBetAmount(totalBetValues[currentTotalBetIndex]);
+    gameViewModel.setBetAmount(totalBetValues[currentTotalBetIndex].toDouble());
 
     setState(() {});
   }
@@ -183,11 +133,25 @@ class _BetSettingsDialogWidgetState extends State<_BetSettingsDialogWidget> {
                     ),
                   ),
                   GestureDetector(
-                    onTap: () => Navigator.of(context).pop(),
-                    child: const Icon(
-                      Icons.close,
-                      color: Colors.white,
-                      size: 24,
+                    onTap: () {
+                      if (_soundEnabled) {
+                        AudioService().playClickSound();
+                      }
+                      Navigator.of(context).pop();
+                    },
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.2),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.red, width: 2),
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        color: Colors.white,
+                        size: 24,
+                      ),
                     ),
                   ),
                 ],
@@ -201,55 +165,17 @@ class _BetSettingsDialogWidgetState extends State<_BetSettingsDialogWidget> {
                   children: [
                     _buildSettingRow(
                       'BET',
-                      betValues[currentBetIndex].toString(),
-                      () {
-                        if (currentBetIndex > 0) {
-                          currentBetIndex--;
-                          _updateTotalBet();
-                        }
-                      },
-                      () {
-                        if (currentBetIndex < betValues.length - 1) {
-                          currentBetIndex++;
-                          _updateTotalBet();
-                        }
-                      },
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    _buildSettingRow(
-                      'COIN VALUE',
-                      coinValues[currentCoinIndex].toStringAsFixed(2),
-                      () {
-                        if (currentCoinIndex > 0) {
-                          currentCoinIndex--;
-                          _updateTotalBet();
-                        }
-                      },
-                      () {
-                        if (currentCoinIndex < coinValues.length - 1) {
-                          currentCoinIndex++;
-                          _updateTotalBet();
-                        }
-                      },
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    _buildSettingRow(
-                      'TOTAL BET',
-                      totalBetValues[currentTotalBetIndex].toStringAsFixed(2),
+                      totalBetValues[currentTotalBetIndex].toString(),
                       () {
                         if (currentTotalBetIndex > 0) {
                           currentTotalBetIndex--;
-                          _updateTotalBetFromDirect();
+                          _updateTotalBet();
                         }
                       },
                       () {
                         if (currentTotalBetIndex < totalBetValues.length - 1) {
                           currentTotalBetIndex++;
-                          _updateTotalBetFromDirect();
+                          _updateTotalBet();
                         }
                       },
                     ),

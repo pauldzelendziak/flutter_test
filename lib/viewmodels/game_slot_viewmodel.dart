@@ -177,7 +177,7 @@ class GameSlotViewModel extends ChangeNotifier {
   void buyFeature() {
     if (canBuyFeature()) {
       print('🎁 ПОЧИНАЄТЬСЯ BUY FEATURE!');
-      print('Ціна: \$${buyFeaturePrice.toStringAsFixed(2)}');
+      print('Ціна: \$${buyFeaturePrice.toInt()}');
 
       _credit -= buyFeaturePrice;
       StorageService().saveCredit(_credit);
@@ -188,12 +188,6 @@ class GameSlotViewModel extends ChangeNotifier {
       print('Множники очищені для нової buy feature');
 
       notifyListeners();
-
-      Future.delayed(const Duration(milliseconds: 50), () {
-        // Прискорено з 100 до 50ms
-        _shouldBuyFeature = false;
-        notifyListeners();
-      });
     }
   }
 
@@ -207,12 +201,6 @@ class GameSlotViewModel extends ChangeNotifier {
     print('Buy feature запущений через scatters, без витрат кредиту');
 
     notifyListeners();
-
-    Future.delayed(const Duration(milliseconds: 50), () {
-      // Прискорено з 100 до 50ms
-      _shouldBuyFeature = false;
-      notifyListeners();
-    });
   }
 
   void clearMultipliersAfterSpin() {
@@ -259,9 +247,9 @@ class GameSlotViewModel extends ChangeNotifier {
 
     if (totalMultiplier > 1.0) {
       double finalWin = baseWin * totalMultiplier;
-      return '\$${baseWin.toStringAsFixed(2)} x${totalMultiplier.toStringAsFixed(1)} = \$${finalWin.toStringAsFixed(2)}';
+      return '\$${baseWin.toInt()} x${totalMultiplier.toInt()} = \$${finalWin.toInt()}';
     } else {
-      return '\$${baseWin.toStringAsFixed(2)}';
+      return '\$${baseWin.toInt()}';
     }
   }
 
@@ -272,10 +260,10 @@ class GameSlotViewModel extends ChangeNotifier {
 
     if (totalMultiplier > 1.0) {
       // Просто видаліть '$' звідси
-      return 'WIN ${_currentWin.toStringAsFixed(2)} x${totalMultiplier.toStringAsFixed(1)}';
+      return 'WIN ${_currentWin.toInt()} x${totalMultiplier.toInt()}';
     } else {
       // Просто видаліть '$' звідси
-      return 'WIN ${_currentWin.toStringAsFixed(2)}';
+      return 'WIN ${_currentWin.toInt()}';
     }
   }
 
@@ -328,11 +316,38 @@ class GameSlotViewModel extends ChangeNotifier {
 
   void processBuyFeatureComplete(double totalWin) {
     print(
-      '🎁 BUY FEATURE ЗАВЕРШЕНО! Загальний виграш: \$${totalWin.toStringAsFixed(2)}',
+      '🎁 BUY FEATURE ЗАВЕРШЕНО! Загальний виграш: \$${totalWin.toInt()}',
     );
 
     String winType = _getWinType(totalWin);
     print('🏆 Тип виграшу: $winType');
+
+    // Скидаємо прапор buy feature
+    _shouldBuyFeature = false;
+
+    // Додаємо виграш до кредиту
+    addWinnings(totalWin);
+
+    // Повідомляємо про завершення buy feature
+    notifyListeners();
+  }
+
+  void resetBuyFeature() {
+    print('🎁 Скидання прапора buy feature');
+    _shouldBuyFeature = false;
+    notifyListeners();
+  }
+
+  void resetAllFlags() {
+    print('🎁 Повне скидання всіх прапорів');
+    _shouldBuyFeature = false;
+    _isAutoplayActive = false;
+    _hasAutoplayBeenStarted = false;
+    _currentAutoplayCount = 0;
+    _showWin = false;
+    _currentWin = 0.0;
+    _collectedMultipliers.clear();
+    notifyListeners();
   }
 
   String _getWinType(double winAmount) {
@@ -380,7 +395,7 @@ class GameSlotViewModel extends ChangeNotifier {
 
       print('=== РОЗРАХУНОК ВИГРАШУ ===');
       print(
-        'Базовий виграш (без множників): \$${baseWinnings.toStringAsFixed(2)}',
+        'Базовий виграш (без множників): \$${baseWinnings.toInt()}',
       );
 
       if (_collectedMultipliers.isNotEmpty) {
@@ -389,15 +404,15 @@ class GameSlotViewModel extends ChangeNotifier {
           double value = multiplierValues[multiplier] ?? 0.0;
           print('  $multiplier = x$value');
         }
-        print('Сума множників: x${totalMultiplier.toStringAsFixed(1)}');
+        print('Сума множників: x${totalMultiplier.toInt()}');
         print(
-          'Розрахунок: \$${baseWinnings.toStringAsFixed(2)} × ${totalMultiplier.toStringAsFixed(1)} = \$${finalWinnings.toStringAsFixed(2)}',
+          'Розрахунок: \$${baseWinnings.toInt()} × ${totalMultiplier.toInt()} = \$${finalWinnings.toInt()}',
         );
       } else {
         print('Множники відсутні');
       }
 
-      print('Загальна сума виграшу: \$${finalWinnings.toStringAsFixed(2)}');
+      print('Загальна сума виграшу: \$${finalWinnings.toInt()}');
       print('=========================');
 
       addWinnings(finalWinnings);
@@ -408,7 +423,7 @@ class GameSlotViewModel extends ChangeNotifier {
 
       if (onBuyFeatureWinAccumulate != null) {
         print(
-          '💸 Передаємо виграш до анімації: \$${finalWinnings.toStringAsFixed(2)}',
+          '💸 Передаємо виграш до анімації: \$${finalWinnings.toInt()}',
         );
         onBuyFeatureWinAccumulate!(finalWinnings);
       }

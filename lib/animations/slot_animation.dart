@@ -143,9 +143,8 @@ class SlotAnimationGame extends FlameGame with HasGameReference {
 
     if (isBuyFeatureActive) {
       buyFeatureSpinsLeft--;
-      if (buyFeatureSpinsLeft <= 0) {
-        isBuyFeatureActive = false;
-      }
+      print('🎁 Buy feature спін завершено, залишилось: $buyFeatureSpinsLeft');
+      // НЕ встановлюємо isBuyFeatureActive = false тут, це зробить цикл while в activateBuyFeature
     }
 
     isAnimating = false;
@@ -156,32 +155,48 @@ class SlotAnimationGame extends FlameGame with HasGameReference {
   }
 
   Future<void> activateBuyFeature() async {
+    print('🎁 activateBuyFeature викликано');
     isBuyFeatureActive = true;
     buyFeatureSpinsLeft = 10;
     _buyFeatureTotalWin = 0.0;
+    print('🎁 Buy feature активовано: isBuyFeatureActive=$isBuyFeatureActive, spinsLeft=$buyFeatureSpinsLeft');
 
     while (buyFeatureSpinsLeft > 0 && isBuyFeatureActive) {
+      print('🎁 Buy feature цикл: spinsLeft=$buyFeatureSpinsLeft, isActive=$isBuyFeatureActive');
+      
       // Додаємо перевірку чи buy feature все ще активний
-      if (!isBuyFeatureActive) break;
+      if (!isBuyFeatureActive) {
+        print('🎁 Buy feature перервано, виходимо з циклу');
+        break;
+      }
 
       await startSpinAnimation();
 
       // Перевіряємо знову після анімації
-      if (!isBuyFeatureActive) break;
+      if (!isBuyFeatureActive) {
+        print('🎁 Buy feature перервано після анімації, виходимо з циклу');
+        break;
+      }
 
       await Future.delayed(
         const Duration(milliseconds: 300),
       ); // Прискорено з 500 до 300ms
     }
 
-    // Викликаємо callback тільки якщо buy feature не був перерваний
-    if (isBuyFeatureActive && onBuyFeatureWinCallback != null) {
+    // Викликаємо callback тільки якщо buy feature завершився нормально (spinsLeft <= 0)
+    if (buyFeatureSpinsLeft <= 0 && onBuyFeatureComplete != null) {
       String winType = _getWinType(_buyFeatureTotalWin);
-
-      AudioService().playBreakingSound();
-
-      onBuyFeatureWinCallback!(_buyFeatureTotalWin, winType);
+      
+      print('🎁 Buy feature завершено, викликаємо onBuyFeatureComplete з totalWin: ${_buyFeatureTotalWin.toInt()}, winType: $winType');
+      onBuyFeatureComplete!(_buyFeatureTotalWin, winType);
+    } else if (buyFeatureSpinsLeft <= 0) {
+      print('⚠️ onBuyFeatureComplete не викликається: spinsLeft=$buyFeatureSpinsLeft, callback=null (віджет знищений)');
+    } else {
+      print('⚠️ onBuyFeatureComplete не викликається: spinsLeft=$buyFeatureSpinsLeft, callback=${onBuyFeatureComplete != null}');
     }
+
+    // Встановлюємо isBuyFeatureActive = false після всіх перевірок
+    isBuyFeatureActive = false;
   }
 
   Future<void> _animateSymbolsOut() async {

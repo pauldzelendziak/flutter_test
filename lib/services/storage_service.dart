@@ -30,26 +30,26 @@ class StorageService {
   Future<void> saveCredit(double credit) async {
     if (!_isInitialized) await initialize();
     await _prefs.setDouble(_keyCredit, credit);
-    print('💰 Кредити збережено: \$${credit.toStringAsFixed(2)}');
+    print('💰 Кредити збережено: \$${credit.toInt()}');
   }
 
   double loadCredit() {
     if (!_isInitialized) return 100000.0;
     final credit = _prefs.getDouble(_keyCredit) ?? 100000.0;
-    print('💰 Кредити завантажено: \$${credit.toStringAsFixed(2)}');
+    print('💰 Кредити завантажено: \$${credit.toInt()}');
     return credit;
   }
 
   Future<void> saveBetAmount(double betAmount) async {
     if (!_isInitialized) await initialize();
     await _prefs.setDouble(_keyBetAmount, betAmount);
-    print('🎰 Ставка збережена: \$${betAmount.toStringAsFixed(2)}');
+    print('🎰 Ставка збережена: \$${betAmount.toInt()}');
   }
 
   double loadBetAmount() {
     if (!_isInitialized) return 2.50;
     final betAmount = _prefs.getDouble(_keyBetAmount) ?? 2.50;
-    print('🎰 Ставка завантажена: \$${betAmount.toStringAsFixed(2)}');
+    print('🎰 Ставка завантажена: \$${betAmount.toInt()}');
     return betAmount;
   }
 
