@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:flutter_test_task/viewmodels/game_slot_viewmodel.dart';
 import 'package:flutter_test_task/widgets/slot_animation_widget.dart';
 import 'package:flutter_test_task/screens/bet_settings_screen.dart';
-import 'package:flutter_test_task/screens/autoplay_settings_screen.dart';
 import 'package:flutter_test_task/screens/system_settings_screen.dart';
 import 'package:flutter_test_task/animations/slot_animation.dart';
 import 'package:flutter_test_task/services/audio_service.dart';
@@ -129,12 +128,6 @@ class _SlotSpinScreenState extends State<SlotSpinScreen>
       // Повністю скидаємо всі прапори включаючи buy feature
       gameViewModel.resetAllFlags();
       print('🎁 Всі прапори ViewModel скинуто перед навігацією');
-
-      // Зупиняємо автоплей якщо він активний
-      if (gameViewModel.isAutoplayActive) {
-        gameViewModel.stopAutoplay();
-        print('🛑 Автоплей зупинено');
-      }
     } catch (e) {
       print('⚠️ Помилка при отриманні GameSlotViewModel: $e');
     }
@@ -363,7 +356,7 @@ class _SlotSpinScreenState extends State<SlotSpinScreen>
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
       child: Row(
         children: [
-          // Кнопка повернення на домашній екран
+          // Кнопка повернення на домашній екран (зліва)
           GestureDetector(
             onTap: _isDisposing
                 ? null
@@ -379,88 +372,46 @@ class _SlotSpinScreenState extends State<SlotSpinScreen>
               child: const Icon(Icons.close, color: Colors.white, size: 24),
             ),
           ),
+
           const SizedBox(width: 8),
+
+          // Лічильник спінів buy feature (поруч з кнопкою HOME)
           Consumer<GameSlotViewModel>(
             builder: (context, gameViewModel, child) {
-              // Показуємо AUTO кнопку лише якщо:
-              // 1. Автоплей активний (запущений) АБО
-              // 2. Автоплей був запущений раніше (hasAutoplayBeenStarted = true)
-              if (gameViewModel.hasAutoplayBeenStarted ||
-                  gameViewModel.isAutoplayActive) {
-                if (!gameViewModel.isAutoplayActive) {
-                  return GestureDetector(
-                    onTap: () {
-                      if (gameViewModel.autoplayCount > 0) {
-                        AudioService().playClickSound();
-                        gameViewModel.startAutoplay();
-                        _startAutoplay();
-                      }
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Colors.green, Colors.lightGreen],
-                        ),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.white, width: 1),
-                      ),
-                      child: Text(
-                        'AUTO ${gameViewModel.autoplayCount}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+              if (gameViewModel.shouldBuyFeature &&
+                  gameViewModel.buyFeatureSpinsLeft > 0) {
+                return Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Colors.orange, Colors.deepOrange],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
-                  );
-                } else {
-                  return Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Colors.orange, Colors.red],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.white, width: 1.5),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.orange.withOpacity(0.4),
+                        blurRadius: 3,
+                        spreadRadius: 1,
                       ),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.white, width: 1),
+                    ],
+                  ),
+                  child: Text(
+                    'SPINS ${gameViewModel.buyFeatureSpinsLeft}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'AUTO ${gameViewModel.currentAutoplayCount}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(width: 5),
-                        GestureDetector(
-                          onTap: () {
-                            AudioService().playClickSound();
-                            gameViewModel.stopAutoplay();
-                          },
-                          child: const Icon(
-                            Icons.stop,
-                            color: Colors.white,
-                            size: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-              } else {
-                return const SizedBox.shrink();
+                  ),
+                );
               }
+              return const SizedBox.shrink();
             },
           ),
 
@@ -691,15 +642,14 @@ class _SlotSpinScreenState extends State<SlotSpinScreen>
                         ),
                       ],
                     ),
-                    const SizedBox(width: 10),
                     Expanded(child: _buildAnimatedSlotGrid()),
-                    const SizedBox(width: 5),
+
                     Consumer<GameSlotViewModel>(
                       builder: (context, gameViewModel, child) {
                         final canSpin = gameViewModel.canSpin() && !_isSpinning;
                         return Container(
-                          width: 120,
-                          height: 120,
+                          width: 100,
+                          height: 100,
                           decoration: const BoxDecoration(
                             shape: BoxShape.circle,
                           ),
@@ -813,19 +763,11 @@ class _SlotSpinScreenState extends State<SlotSpinScreen>
   void _stopAllAnimations() {
     if (_isDisposing) return; // Перевірка перед початком
 
-    final gameViewModel = Provider.of<GameSlotViewModel>(
-      context,
-      listen: false,
-    );
-
     if (mounted && !_isDisposing) {
       setState(() {
         _isSpinning = false;
         _shouldAnimate = false;
       });
-    }
-    if (gameViewModel.isAutoplayActive) {
-      gameViewModel.stopAutoplay();
     }
   }
 
@@ -854,55 +796,6 @@ class _SlotSpinScreenState extends State<SlotSpinScreen>
           });
         }
       });
-    }
-  }
-
-  void _startAutoplay() async {
-    final gameViewModel = Provider.of<GameSlotViewModel>(
-      context,
-      listen: false,
-    );
-
-    while (gameViewModel.isAutoplayActive &&
-        gameViewModel.currentAutoplayCount > 0 &&
-        mounted &&
-        !_isDisposing) {
-      // Додали перевірку _isDisposing
-      if (!gameViewModel.canSpin()) {
-        gameViewModel.stopAutoplay();
-
-        // Перевіряємо mounted і _isDisposing перед використанням context
-        if (mounted && !_isDisposing) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Not enough money to auto-spin!'),
-              backgroundColor: Colors.red,
-              duration: Duration(seconds: 2), // Прискорено з 2 до 1.5 секунд
-            ),
-          );
-        }
-        break;
-      }
-
-      // Перевіряємо mounted і _isDisposing перед спіном
-      if (!mounted || _isDisposing) break;
-
-      _startSpinAnimation();
-
-      while (_isSpinning && mounted && !_isDisposing) {
-        // Додали перевірку _isDisposing
-        await Future.delayed(
-          const Duration(milliseconds: 50),
-        ); // Прискорено з 100 до 50ms
-      }
-
-      // Перевіряємо mounted і _isDisposing перед наступними операціями
-      if (!mounted || _isDisposing || !gameViewModel.isAutoplayActive) break;
-
-      gameViewModel.decrementAutoplayCount();
-      final delay = 300; // Прискорено з 500 до 300ms
-
-      await Future.delayed(Duration(milliseconds: delay));
     }
   }
 
@@ -1027,8 +920,24 @@ class _SlotSpinScreenState extends State<SlotSpinScreen>
                     print('🎁 +5 фріспінів під час buy feature');
                   }
                 },
+                onBuyFeatureSpinsUpdate: (spinsLeft) {
+                  // Оновлюємо UI коли змінюється кількість спінів
+                  final gameViewModel = Provider.of<GameSlotViewModel>(
+                    context,
+                    listen: false,
+                  );
+                  // Використовуємо updateUI для оновлення UI
+                  gameViewModel.updateUI();
+                  print('🔢 Buy feature спіни оновлено: $spinsLeft');
+                },
                 onGameReady: (game) {
                   _slotGame = game;
+                  // Передаємо посилання на SlotAnimationGame до ViewModel
+                  final gameViewModel = Provider.of<GameSlotViewModel>(
+                    context,
+                    listen: false,
+                  );
+                  gameViewModel.setSlotGame(game);
                 },
               ),
             ),
@@ -1132,8 +1041,6 @@ class _SlotSpinScreenState extends State<SlotSpinScreen>
           ),
           Row(
             children: [
-              _buildSettingsButton('autoplaysettings.webp'),
-              const SizedBox(width: 12),
               _buildSettingsButton('betsettings.webp'),
               const SizedBox(width: 12),
               _buildSettingsButton('mainsettings.webp'),
@@ -1151,8 +1058,6 @@ class _SlotSpinScreenState extends State<SlotSpinScreen>
 
         if (imageName == 'betsettings.webp') {
           BetSettingsDialog.show(context);
-        } else if (imageName == 'autoplaysettings.webp') {
-          AutoplaySettingsDialog.show(context, onStartAutoplay: _startAutoplay);
         } else if (imageName == 'mainsettings.webp') {
           SystemSettingsDialog.show(context);
         }

@@ -28,6 +28,8 @@ class SlotAnimationGame extends FlameGame with HasGameReference {
   Function(double, String)? onBuyFeatureComplete;
 
   Function(int)? onScatterCallback;
+  Function(int)?
+  onBuyFeatureSpinsUpdate; // Callback для оновлення лічильника спінів
 
   static const List<String> candySymbols = [
     'assets/images/candy1.webp',
@@ -144,6 +146,12 @@ class SlotAnimationGame extends FlameGame with HasGameReference {
     if (isBuyFeatureActive) {
       buyFeatureSpinsLeft--;
       print('🎁 Buy feature спін завершено, залишилось: $buyFeatureSpinsLeft');
+
+      // Викликаємо callback для оновлення лічильника спінів
+      if (onBuyFeatureSpinsUpdate != null) {
+        onBuyFeatureSpinsUpdate!(buyFeatureSpinsLeft);
+      }
+
       // НЕ встановлюємо isBuyFeatureActive = false тут, це зробить цикл while в activateBuyFeature
     }
 
@@ -159,11 +167,15 @@ class SlotAnimationGame extends FlameGame with HasGameReference {
     isBuyFeatureActive = true;
     buyFeatureSpinsLeft = 10;
     _buyFeatureTotalWin = 0.0;
-    print('🎁 Buy feature активовано: isBuyFeatureActive=$isBuyFeatureActive, spinsLeft=$buyFeatureSpinsLeft');
+    print(
+      '🎁 Buy feature активовано: isBuyFeatureActive=$isBuyFeatureActive, spinsLeft=$buyFeatureSpinsLeft',
+    );
 
     while (buyFeatureSpinsLeft > 0 && isBuyFeatureActive) {
-      print('🎁 Buy feature цикл: spinsLeft=$buyFeatureSpinsLeft, isActive=$isBuyFeatureActive');
-      
+      print(
+        '🎁 Buy feature цикл: spinsLeft=$buyFeatureSpinsLeft, isActive=$isBuyFeatureActive',
+      );
+
       // Додаємо перевірку чи buy feature все ще активний
       if (!isBuyFeatureActive) {
         print('🎁 Buy feature перервано, виходимо з циклу');
@@ -186,13 +198,19 @@ class SlotAnimationGame extends FlameGame with HasGameReference {
     // Викликаємо callback тільки якщо buy feature завершився нормально (spinsLeft <= 0)
     if (buyFeatureSpinsLeft <= 0 && onBuyFeatureComplete != null) {
       String winType = _getWinType(_buyFeatureTotalWin);
-      
-      print('🎁 Buy feature завершено, викликаємо onBuyFeatureComplete з totalWin: ${_buyFeatureTotalWin.toInt()}, winType: $winType');
+
+      print(
+        '🎁 Buy feature завершено, викликаємо onBuyFeatureComplete з totalWin: ${_buyFeatureTotalWin.toInt()}, winType: $winType',
+      );
       onBuyFeatureComplete!(_buyFeatureTotalWin, winType);
     } else if (buyFeatureSpinsLeft <= 0) {
-      print('⚠️ onBuyFeatureComplete не викликається: spinsLeft=$buyFeatureSpinsLeft, callback=null (віджет знищений)');
+      print(
+        '⚠️ onBuyFeatureComplete не викликається: spinsLeft=$buyFeatureSpinsLeft, callback=null (віджет знищений)',
+      );
     } else {
-      print('⚠️ onBuyFeatureComplete не викликається: spinsLeft=$buyFeatureSpinsLeft, callback=${onBuyFeatureComplete != null}');
+      print(
+        '⚠️ onBuyFeatureComplete не викликається: spinsLeft=$buyFeatureSpinsLeft, callback=${onBuyFeatureComplete != null}',
+      );
     }
 
     // Встановлюємо isBuyFeatureActive = false після всіх перевірок
@@ -264,6 +282,12 @@ class SlotAnimationGame extends FlameGame with HasGameReference {
           '🎁 ДОДАТКОВІ ФРІСПІНИ! Знайдено $scatterCount Scatters, додаємо 5 спінів',
         );
         buyFeatureSpinsLeft += 5;
+
+        // Викликаємо callback для оновлення лічильника спінів
+        if (onBuyFeatureSpinsUpdate != null) {
+          onBuyFeatureSpinsUpdate!(buyFeatureSpinsLeft);
+        }
+
         if (onScatterCallback != null) {
           onScatterCallback!(-scatterCount);
         }

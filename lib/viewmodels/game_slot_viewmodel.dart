@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test_task/services/storage_service.dart';
+import 'package:flutter_test_task/animations/slot_animation.dart';
 import 'dart:math';
 
 class GameSlotViewModel extends ChangeNotifier {
@@ -11,7 +12,7 @@ class GameSlotViewModel extends ChangeNotifier {
   Function(double)? onBuyFeatureWinAccumulate;
 
   double _betAmount = 2.50;
-  double _credit = 100000.00;
+  double _credit = 2000.00;
   int _multiplier = 21100;
   bool _doubleChanceEnabled = false;
   bool _shouldBuyFeature = false;
@@ -24,6 +25,9 @@ class GameSlotViewModel extends ChangeNotifier {
   int _currentAutoplayCount = 0;
   bool _hasAutoplayBeenStarted = false;
   bool _isInitialized = false;
+
+  // Посилання на SlotAnimationGame для отримання кількості спінів
+  SlotAnimationGame? _slotGame;
 
   GameSlotViewModel() {
     _initializeFromStorage();
@@ -58,6 +62,9 @@ class GameSlotViewModel extends ChangeNotifier {
   List<String> get collectedMultipliers => _collectedMultipliers;
   double get currentWin => _currentWin;
   bool get showWin => _showWin;
+
+  // Геттер для кількості спінів buy feature що залишились
+  int get buyFeatureSpinsLeft => _slotGame?.remainingBuyFeatureSpins ?? 0;
 
   int get autoplayCount => _autoplayCount;
   bool get isAutoplayActive => _isAutoplayActive;
@@ -315,9 +322,7 @@ class GameSlotViewModel extends ChangeNotifier {
   }
 
   void processBuyFeatureComplete(double totalWin) {
-    print(
-      '🎁 BUY FEATURE ЗАВЕРШЕНО! Загальний виграш: \$${totalWin.toInt()}',
-    );
+    print('🎁 BUY FEATURE ЗАВЕРШЕНО! Загальний виграш: \$${totalWin.toInt()}');
 
     String winType = _getWinType(totalWin);
     print('🏆 Тип виграшу: $winType');
@@ -347,6 +352,16 @@ class GameSlotViewModel extends ChangeNotifier {
     _showWin = false;
     _currentWin = 0.0;
     _collectedMultipliers.clear();
+    notifyListeners();
+  }
+
+  // Метод для встановлення посилання на SlotAnimationGame
+  void setSlotGame(SlotAnimationGame? game) {
+    _slotGame = game;
+  }
+
+  // Публічний метод для оновлення UI
+  void updateUI() {
     notifyListeners();
   }
 
@@ -394,9 +409,7 @@ class GameSlotViewModel extends ChangeNotifier {
       double finalWinnings = baseWinnings * totalMultiplier;
 
       print('=== РОЗРАХУНОК ВИГРАШУ ===');
-      print(
-        'Базовий виграш (без множників): \$${baseWinnings.toInt()}',
-      );
+      print('Базовий виграш (без множників): \$${baseWinnings.toInt()}');
 
       if (_collectedMultipliers.isNotEmpty) {
         print('Зібрані множники: $_collectedMultipliers');
@@ -422,9 +435,7 @@ class GameSlotViewModel extends ChangeNotifier {
       }
 
       if (onBuyFeatureWinAccumulate != null) {
-        print(
-          '💸 Передаємо виграш до анімації: \$${finalWinnings.toInt()}',
-        );
+        print('💸 Передаємо виграш до анімації: \$${finalWinnings.toInt()}');
         onBuyFeatureWinAccumulate!(finalWinnings);
       }
     } else {

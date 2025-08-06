@@ -20,7 +20,7 @@ class BuyFeatureConfirmDialog {
             child: GestureDetector(
               onTap: () {}, // Запобігає закриттю при натисканні на сам діалог
               child: Container(
-                width: MediaQuery.of(context).size.width * 0.8,
+                width: MediaQuery.of(context).size.width * 0.5,
                 constraints: const BoxConstraints(maxWidth: 320, minWidth: 280),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
@@ -43,31 +43,6 @@ class BuyFeatureConfirmDialog {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Заголовок
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Colors.orange, Colors.pink],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: BorderRadius.circular(15),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.orange.withOpacity(0.3),
-                              blurRadius: 8,
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // Текст підтвердження
                       Column(
                         children: [
                           Container(
@@ -90,7 +65,7 @@ class BuyFeatureConfirmDialog {
                               ],
                             ),
                             child: const Text(
-                              '10 AUTO-FREE SPINS',
+                              '10 AUTOSPINS',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 18,
@@ -128,21 +103,12 @@ class BuyFeatureConfirmDialog {
                               ],
                             ),
                             child: Text(
-                              '\$${price.toInt()}',
+                              '${price.toInt()}',
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
                               ),
-                            ),
-                          ),
-                          const SizedBox(height: 5),
-                          const Text(
-                            'MULTIPLIER INCLUDED',
-                            style: TextStyle(
-                              color: Color.fromARGB(255, 252, 248, 17),
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
@@ -158,9 +124,6 @@ class BuyFeatureConfirmDialog {
                           GestureDetector(
                             onTap: () {
                               AudioService().playClickSound();
-                              print(
-                                '❌ Користувач натиснув NO в діалозі Buy Feature',
-                              );
                               Navigator.of(context).pop(false);
                             },
                             child: Container(
@@ -201,9 +164,6 @@ class BuyFeatureConfirmDialog {
                           GestureDetector(
                             onTap: () {
                               AudioService().playClickSound();
-                              print(
-                                '✅ Користувач натиснув YES в діалозі Buy Feature',
-                              );
                               onConfirm();
                               Navigator.of(context).pop(true);
                             },

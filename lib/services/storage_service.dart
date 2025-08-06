@@ -34,8 +34,8 @@ class StorageService {
   }
 
   double loadCredit() {
-    if (!_isInitialized) return 100000.0;
-    final credit = _prefs.getDouble(_keyCredit) ?? 100000.0;
+    if (!_isInitialized) return 2000.0;
+    final credit = _prefs.getDouble(_keyCredit) ?? 2000.0;
     print('💰 Кредити завантажено: \$${credit.toInt()}');
     return credit;
   }
@@ -66,14 +66,10 @@ class StorageService {
     return enabled;
   }
 
-  Future<void> saveAutoplaySettings({
-    required int count,
-  }) async {
+  Future<void> saveAutoplaySettings({required int count}) async {
     if (!_isInitialized) await initialize();
     await _prefs.setInt(_keyAutoplayCount, count);
-    print(
-      '⚡ Автоспін збережено: $count спінів (завжди turbo)',
-    );
+    print('⚡ Автоспін збережено: $count спінів (завжди turbo)');
   }
 
   Map<String, dynamic> loadAutoplaySettings() {
@@ -81,13 +77,9 @@ class StorageService {
       return {'count': 10};
     }
 
-    final settings = {
-      'count': _prefs.getInt(_keyAutoplayCount) ?? 10,
-    };
+    final settings = {'count': _prefs.getInt(_keyAutoplayCount) ?? 10};
 
-    print(
-      '⚡ Автоспін завантажено: ${settings['count']} спінів (завжди turbo)',
-    );
+    print('⚡ Автоспін завантажено: ${settings['count']} спінів (завжди turbo)');
     return settings;
   }
 

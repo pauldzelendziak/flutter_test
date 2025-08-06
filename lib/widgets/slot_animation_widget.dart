@@ -11,6 +11,8 @@ class SlotAnimationWidget extends StatefulWidget {
   final Function(double)? onBuyFeatureWinAccumulate;
   final Function(SlotAnimationGame)? onGameReady;
   final Function(int)? onScatterCallback;
+  final Function(int)?
+  onBuyFeatureSpinsUpdate; // Новий callback для оновлення лічильника спінів
   final bool shouldAnimate;
   final bool shouldBuyFeature;
 
@@ -24,6 +26,7 @@ class SlotAnimationWidget extends StatefulWidget {
     this.onBuyFeatureWinAccumulate,
     this.onGameReady,
     this.onScatterCallback,
+    this.onBuyFeatureSpinsUpdate,
     this.shouldAnimate = false,
     this.shouldBuyFeature = false,
   });
@@ -64,6 +67,7 @@ class _SlotAnimationWidgetState extends State<SlotAnimationWidget> {
       '🎯 onBuyFeatureComplete встановлено: ${widget.onBuyFeatureComplete != null}',
     );
     game.onScatterCallback = widget.onScatterCallback;
+    game.onBuyFeatureSpinsUpdate = widget.onBuyFeatureSpinsUpdate;
 
     game.onBuyFeatureWinAccumulate = (winAmount) {
       game.addToBuyFeatureWin(winAmount);
@@ -150,6 +154,7 @@ class _SlotAnimationWidgetState extends State<SlotAnimationWidget> {
     game.onBuyFeatureComplete = null;
     game.onBuyFeatureWinAccumulate = null;
     game.onScatterCallback = null;
+    game.onBuyFeatureSpinsUpdate = null;
 
     super.dispose();
   }
